@@ -9,12 +9,10 @@ import akka.actor.typed.javadsl.Receive
 import eu.bwbw.bridge.Greeter.Greet
 import java.util.*
 
-// #greeter
 class Greeter private constructor(context: ActorContext<Greet>) : AbstractBehavior<Greet>(context) {
     class Greet(val whom: String?, val replyTo: ActorRef<Greeted>)
 
     class Greeted(val whom: String?, val from: ActorRef<Greet?>) {
-        // #greeter
         override fun equals(o: Any?): Boolean {
             if (this === o) return true
             if (o == null || javaClass != o.javaClass) return false
@@ -32,7 +30,7 @@ class Greeter private constructor(context: ActorContext<Greet>) : AbstractBehavi
                     "whom='" + whom + '\'' +
                     ", from=" + from +
                     '}'
-        } // #greeter
+        }
 
     }
 
@@ -42,9 +40,7 @@ class Greeter private constructor(context: ActorContext<Greet>) : AbstractBehavi
 
     private fun onGreet(command: Greet): Behavior<Greet?> {
         context.log.info("Hello {}!", command.whom)
-        //#greeter-send-message
         command.replyTo.tell(Greeted(command.whom, context.self))
-        //#greeter-send-message
         return this
     }
 

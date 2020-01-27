@@ -18,10 +18,9 @@ class GreeterMain private constructor(context: ActorContext<SayHello>) : Abstrac
         return newReceiveBuilder().onMessage(SayHello::class.java) { command: SayHello -> onSayHello(command) }.build()
     }
 
-    private fun onSayHello(command: SayHello): Behavior<SayHello?> { //#create-actors
+    private fun onSayHello(command: SayHello): Behavior<SayHello?> {
         val replyTo = context.spawn<Greeted>(GreeterBot.create(3), command.name)
         greeter.tell(Greet(command.name, replyTo))
-        //#create-actors
         return this
     }
 
@@ -32,8 +31,6 @@ class GreeterMain private constructor(context: ActorContext<SayHello>) : Abstrac
     }
 
     init {
-        //#create-actors
         greeter = context.spawn(Greeter.create(), "greeter")
-        //#create-actors
     }
 }

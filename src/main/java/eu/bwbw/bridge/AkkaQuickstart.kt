@@ -6,12 +6,11 @@ import java.io.IOException
 
 object AkkaQuickstart {
     @JvmStatic
-    fun main(args: Array<String>) { //#actor-system
+    fun main(args: Array<String>) {
         val greeterMain = ActorSystem.create<SayHello>(GreeterMain.create(), "helloakka")
-        //#actor-system
-//#main-send-messages
+
         greeterMain.tell(SayHello("Charles"))
-        //#main-send-messages
+
         try {
             println(">>> Press ENTER to exit <<<")
             System.`in`.read()
