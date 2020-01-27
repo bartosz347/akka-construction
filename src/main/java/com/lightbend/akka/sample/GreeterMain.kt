@@ -1,43 +1,39 @@
-package com.lightbend.akka.sample;
+package com.lightbend.akka.sample
 
-import akka.actor.typed.ActorRef;
-import akka.actor.typed.Behavior;
-import akka.actor.typed.javadsl.*;
+import akka.actor.typed.ActorRef
+import akka.actor.typed.Behavior
+import akka.actor.typed.javadsl.AbstractBehavior
+import akka.actor.typed.javadsl.ActorContext
+import akka.actor.typed.javadsl.Behaviors
+import akka.actor.typed.javadsl.Receive
+import com.lightbend.akka.sample.Greeter.Greet
+import com.lightbend.akka.sample.Greeter.Greeted
+import com.lightbend.akka.sample.GreeterMain.SayHello
 
-public class GreeterMain extends AbstractBehavior<GreeterMain.SayHello> {
+class GreeterMain private constructor(context: ActorContext<SayHello>) : AbstractBehavior<SayHello>(context) {
+    class SayHello(val name: String)
 
-    public static class SayHello {
-        public final String name;
+    private val greeter: ActorRef<Greet>
+    override fun createReceive(): Receive<SayHello> {
+        return newReceiveBuilder().onMessage(SayHello::class.java) { command: SayHello -> onSayHello(command) }.build()
+    }
 
-        public SayHello(String name) {
-            this.name = name;
+    private fun onSayHello(command: SayHello): Behavior<SayHello?> { //#create-actors
+        val replyTo = context.spawn<Greeted>(GreeterBot.Companion.create(3), command.name)
+        greeter.tell(Greet(command.name, replyTo))
+        //#create-actors
+        return this
+    }
+
+    companion object {
+        fun create(): Behavior<SayHello> {
+            return Behaviors.setup { context: ActorContext<SayHello> -> GreeterMain(context) }
         }
     }
 
-    private final ActorRef<Greeter.Greet> greeter;
-
-    public static Behavior<SayHello> create() {
-        return Behaviors.setup(GreeterMain::new);
-    }
-
-    private GreeterMain(ActorContext<SayHello> context) {
-        super(context);
+    init {
         //#create-actors
-        greeter = context.spawn(Greeter.create(), "greeter");
+        greeter = context.spawn(Greeter.Companion.create(), "greeter")
         //#create-actors
-    }
-
-    @Override
-    public Receive<SayHello> createReceive() {
-        return newReceiveBuilder().onMessage(SayHello.class, this::onSayHello).build();
-    }
-
-    private Behavior<SayHello> onSayHello(SayHello command) {
-        //#create-actors
-        ActorRef<Greeter.Greeted> replyTo =
-                getContext().spawn(GreeterBot.create(3), command.name);
-        greeter.tell(new Greeter.Greet(command.name, replyTo));
-        //#create-actors
-        return this;
     }
 }

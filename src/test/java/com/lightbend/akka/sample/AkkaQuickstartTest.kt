@@ -1,25 +1,25 @@
-package com.lightbend.akka.sample;
+package com.lightbend.akka.sample
 
-import akka.actor.testkit.typed.javadsl.TestKitJunitResource;
-import akka.actor.testkit.typed.javadsl.TestProbe;
-import akka.actor.typed.ActorRef;
-import org.junit.ClassRule;
-import org.junit.Test;
+import akka.actor.testkit.typed.javadsl.TestKitJunitResource
+import com.lightbend.akka.sample.Greeter.Greet
+import com.lightbend.akka.sample.Greeter.Greeted
+import org.junit.ClassRule
+import org.junit.Test
 
 //#definition
-public class AkkaQuickstartTest {
-
-    @ClassRule
-    public static final TestKitJunitResource testKit = new TestKitJunitResource();
-//#definition
-
-    //#test
+class AkkaQuickstartTest {
+    //#definition
+//#test
     @Test
-    public void testGreeterActorSendingOfGreeting() {
-        TestProbe<Greeter.Greeted> testProbe = testKit.createTestProbe();
-        ActorRef<Greeter.Greet> underTest = testKit.spawn(Greeter.create(), "greeter");
-        underTest.tell(new Greeter.Greet("Charles", testProbe.getRef()));
-        testProbe.expectMessage(new Greeter.Greeted("Charles", underTest));
+    fun testGreeterActorSendingOfGreeting() {
+        val testProbe = testKit.createTestProbe<Greeted>()
+        val underTest = testKit.spawn(Greeter.create(), "greeter")
+        underTest.tell(Greet("Charles", testProbe.ref))
+        testProbe.expectMessage(Greeted("Charles", underTest))
+    } //#test
+
+    companion object {
+        @ClassRule
+        val testKit = TestKitJunitResource()
     }
-    //#test
 }

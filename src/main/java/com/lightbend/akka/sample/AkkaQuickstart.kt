@@ -1,24 +1,23 @@
-package com.lightbend.akka.sample;
+package com.lightbend.akka.sample
 
-import akka.actor.typed.ActorSystem;
+import akka.actor.typed.ActorSystem
+import com.lightbend.akka.sample.GreeterMain.SayHello
+import java.io.IOException
 
-import java.io.IOException;
-public class AkkaQuickstart {
-  public static void main(String[] args) {
-    //#actor-system
-    final ActorSystem<GreeterMain.SayHello> greeterMain = ActorSystem.create(GreeterMain.create(), "helloakka");
-    //#actor-system
-
-    //#main-send-messages
-    greeterMain.tell(new GreeterMain.SayHello("Charles"));
-    //#main-send-messages
-
-    try {
-      System.out.println(">>> Press ENTER to exit <<<");
-      System.in.read();
-    } catch (IOException ignored) {
-    } finally {
-      greeterMain.terminate();
+object AkkaQuickstart {
+    @JvmStatic
+    fun main(args: Array<String>) { //#actor-system
+        val greeterMain = ActorSystem.create<SayHello>(GreeterMain.Companion.create(), "helloakka")
+        //#actor-system
+//#main-send-messages
+        greeterMain.tell(SayHello("Charles"))
+        //#main-send-messages
+        try {
+            println(">>> Press ENTER to exit <<<")
+            System.`in`.read()
+        } catch (ignored: IOException) {
+        } finally {
+            greeterMain.terminate()
+        }
     }
-  }
 }
