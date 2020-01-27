@@ -1,13 +1,13 @@
-package com.lightbend.akka.sample
+package eu.bwbw.bridge
 
 import akka.actor.typed.ActorSystem
-import com.lightbend.akka.sample.GreeterMain.SayHello
+import eu.bwbw.bridge.GreeterMain.SayHello
 import java.io.IOException
 
 object AkkaQuickstart {
     @JvmStatic
     fun main(args: Array<String>) { //#actor-system
-        val greeterMain = ActorSystem.create<SayHello>(GreeterMain.Companion.create(), "helloakka")
+        val greeterMain = ActorSystem.create<SayHello>(GreeterMain.create(), "helloakka")
         //#actor-system
 //#main-send-messages
         greeterMain.tell(SayHello("Charles"))

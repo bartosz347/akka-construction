@@ -1,12 +1,12 @@
-package com.lightbend.akka.sample
+package eu.bwbw.bridge
 
 import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.AbstractBehavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
 import akka.actor.typed.javadsl.Receive
-import com.lightbend.akka.sample.Greeter.Greet
-import com.lightbend.akka.sample.Greeter.Greeted
+import eu.bwbw.bridge.Greeter.Greet
+import eu.bwbw.bridge.Greeter.Greeted
 
 class GreeterBot private constructor(context: ActorContext<Greeted>, private val max: Int) : AbstractBehavior<Greeted>(context) {
     private var greetingCounter = 0

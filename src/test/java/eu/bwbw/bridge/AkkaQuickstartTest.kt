@@ -1,8 +1,8 @@
-package com.lightbend.akka.sample
+package eu.bwbw.bridge
 
 import akka.actor.testkit.typed.javadsl.TestKitJunitResource
-import com.lightbend.akka.sample.Greeter.Greet
-import com.lightbend.akka.sample.Greeter.Greeted
+import eu.bwbw.bridge.Greeter.Greet
+import eu.bwbw.bridge.Greeter.Greeted
 import org.junit.ClassRule
 import org.junit.Test
 

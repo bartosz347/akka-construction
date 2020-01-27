@@ -1,4 +1,4 @@
-package com.lightbend.akka.sample
+package eu.bwbw.bridge
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
@@ -6,7 +6,7 @@ import akka.actor.typed.javadsl.AbstractBehavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
 import akka.actor.typed.javadsl.Receive
-import com.lightbend.akka.sample.Greeter.Greet
+import eu.bwbw.bridge.Greeter.Greet
 import java.util.*
 
 // #greeter

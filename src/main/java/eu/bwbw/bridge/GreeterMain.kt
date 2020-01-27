@@ -1,4 +1,4 @@
-package com.lightbend.akka.sample
+package eu.bwbw.bridge
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
@@ -6,9 +6,9 @@ import akka.actor.typed.javadsl.AbstractBehavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
 import akka.actor.typed.javadsl.Receive
-import com.lightbend.akka.sample.Greeter.Greet
-import com.lightbend.akka.sample.Greeter.Greeted
-import com.lightbend.akka.sample.GreeterMain.SayHello
+import eu.bwbw.bridge.Greeter.Greet
+import eu.bwbw.bridge.Greeter.Greeted
+import eu.bwbw.bridge.GreeterMain.SayHello
 
 class GreeterMain private constructor(context: ActorContext<SayHello>) : AbstractBehavior<SayHello>(context) {
     class SayHello(val name: String)
@@ -19,7 +19,7 @@ class GreeterMain private constructor(context: ActorContext<SayHello>) : Abstrac
     }
 
     private fun onSayHello(command: SayHello): Behavior<SayHello?> { //#create-actors
-        val replyTo = context.spawn<Greeted>(GreeterBot.Companion.create(3), command.name)
+        val replyTo = context.spawn<Greeted>(GreeterBot.create(3), command.name)
         greeter.tell(Greet(command.name, replyTo))
         //#create-actors
         return this
@@ -33,7 +33,7 @@ class GreeterMain private constructor(context: ActorContext<SayHello>) : Abstrac
 
     init {
         //#create-actors
-        greeter = context.spawn(Greeter.Companion.create(), "greeter")
+        greeter = context.spawn(Greeter.create(), "greeter")
         //#create-actors
     }
 }
