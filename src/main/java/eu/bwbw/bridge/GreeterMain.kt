@@ -11,9 +11,10 @@ import eu.bwbw.bridge.Greeter.Greeted
 import eu.bwbw.bridge.GreeterMain.SayHello
 
 class GreeterMain private constructor(context: ActorContext<SayHello>) : AbstractBehavior<SayHello>(context) {
-    class SayHello(val name: String)
+    data class SayHello(val name: String)
 
-    private val greeter: ActorRef<Greet>
+    private val greeter: ActorRef<Greet> = context.spawn(Greeter.create(), "greeter")
+
     override fun createReceive(): Receive<SayHello> {
         return newReceiveBuilder().onMessage(SayHello::class.java) { command: SayHello -> onSayHello(command) }.build()
     }
@@ -30,7 +31,4 @@ class GreeterMain private constructor(context: ActorContext<SayHello>) : Abstrac
         }
     }
 
-    init {
-        greeter = context.spawn(Greeter.create(), "greeter")
-    }
 }

@@ -7,32 +7,10 @@ import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
 import akka.actor.typed.javadsl.Receive
 import eu.bwbw.bridge.Greeter.Greet
-import java.util.*
 
 class Greeter private constructor(context: ActorContext<Greet>) : AbstractBehavior<Greet>(context) {
-    class Greet(val whom: String?, val replyTo: ActorRef<Greeted>)
-
-    class Greeted(val whom: String?, val from: ActorRef<Greet?>) {
-        override fun equals(o: Any?): Boolean {
-            if (this === o) return true
-            if (o == null || javaClass != o.javaClass) return false
-            val greeted = o as Greeted
-            return whom == greeted.whom &&
-                    from == greeted.from
-        }
-
-        override fun hashCode(): Int {
-            return Objects.hash(whom, from)
-        }
-
-        override fun toString(): String {
-            return "Greeted{" +
-                    "whom='" + whom + '\'' +
-                    ", from=" + from +
-                    '}'
-        }
-
-    }
+    data class Greet(val whom: String?, val replyTo: ActorRef<Greeted>)
+    data class Greeted(val whom: String?, val from: ActorRef<Greet?>)
 
     override fun createReceive(): Receive<Greet> {
         return newReceiveBuilder().onMessage(Greet::class.java) { command: Greet -> onGreet(command) }.build()
