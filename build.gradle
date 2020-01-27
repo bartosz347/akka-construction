@@ -15,7 +15,8 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.2.3'
     testCompile 'com.typesafe.akka:akka-actor-testkit-typed_2.13:2.6.0'
     testCompile 'junit:junit:4.12'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.6.0'
 }
 
 compileKotlin {
@@ -27,5 +28,13 @@ compileKotlin {
 compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+}
+
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
     }
 }
