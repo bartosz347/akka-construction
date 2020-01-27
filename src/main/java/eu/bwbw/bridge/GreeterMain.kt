@@ -2,21 +2,21 @@ package eu.bwbw.bridge
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
-import akka.actor.typed.javadsl.AbstractBehavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
-import akka.actor.typed.javadsl.Receive
 import eu.bwbw.bridge.Greeter.Greet
 import eu.bwbw.bridge.Greeter.Greeted
 import eu.bwbw.bridge.GreeterMain.SayHello
+import eu.bwbw.bridge.utils.AbstractBehaviorKT
 
-class GreeterMain private constructor(context: ActorContext<SayHello>) : AbstractBehavior<SayHello>(context) {
+class GreeterMain private constructor(context: ActorContext<SayHello>) : AbstractBehaviorKT<SayHello>(context) {
     data class SayHello(val name: String)
 
     private val greeter: ActorRef<Greet> = context.spawn(Greeter.create(), "greeter")
 
-    override fun createReceive(): Receive<SayHello> {
-        return newReceiveBuilder().onMessage(SayHello::class.java) { command: SayHello -> onSayHello(command) }.build()
+    override fun onMessage(msg: SayHello): Behavior<SayHello> {
+        onSayHello(msg)
+        return this
     }
 
     private fun onSayHello(command: SayHello): Behavior<SayHello?> {
@@ -26,9 +26,7 @@ class GreeterMain private constructor(context: ActorContext<SayHello>) : Abstrac
     }
 
     companion object {
-        fun create(): Behavior<SayHello> {
-            return Behaviors.setup { context: ActorContext<SayHello> -> GreeterMain(context) }
-        }
+        fun create(): Behavior<SayHello> = Behaviors.setup { context: ActorContext<SayHello> -> GreeterMain(context) }
     }
 
 }

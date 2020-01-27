@@ -1,17 +1,18 @@
 package eu.bwbw.bridge
 
 import akka.actor.typed.Behavior
-import akka.actor.typed.javadsl.AbstractBehavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
-import akka.actor.typed.javadsl.Receive
 import eu.bwbw.bridge.Greeter.Greet
 import eu.bwbw.bridge.Greeter.Greeted
+import eu.bwbw.bridge.utils.AbstractBehaviorKT
 
-class GreeterBot private constructor(context: ActorContext<Greeted>, private val max: Int) : AbstractBehavior<Greeted>(context) {
+class GreeterBot private constructor(context: ActorContext<Greeted>, private val max: Int) : AbstractBehaviorKT<Greeted>(context) {
     private var greetingCounter = 0
-    override fun createReceive(): Receive<Greeted> {
-        return newReceiveBuilder().onMessage(Greeted::class.java) { message: Greeted -> onGreeted(message) }.build()
+
+    override fun onMessage(msg: Greeted): Behavior<Greeted> {
+        onGreeted(msg)
+        return this
     }
 
     private fun onGreeted(message: Greeted): Behavior<Greeted?> {
@@ -26,9 +27,8 @@ class GreeterBot private constructor(context: ActorContext<Greeted>, private val
     }
 
     companion object {
-        fun create(max: Int): Behavior<Greeted> {
-            return Behaviors.setup { context: ActorContext<Greeted> -> GreeterBot(context, max) }
-        }
+        fun create(max: Int): Behavior<Greeted> =
+                Behaviors.setup { context: ActorContext<Greeted> -> GreeterBot(context, max) }
     }
 
 }
