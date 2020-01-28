@@ -1,0 +1,21 @@
+{
+    "initialState": [{"name": "concrete"}],
+    "goalState": [
+        {"name": "deck"},
+        {"name": "anchorage", "instance": "left"}
+    ],
+    "workers": [
+        {
+            "name": "Bob",
+            "abilities": ["build-anchorage"]
+        }
+    ],
+    "abilities": [
+        {
+            "name": "build-anchorage",
+            "preconditions": [{"name": "concrete"}],
+            "adds": [{"name": "anchorage", "instance": "ANY"}],
+            "deletes": [{"name": "concrete"}]
+        }
+    ]
+}

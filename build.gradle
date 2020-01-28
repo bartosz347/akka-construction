@@ -13,9 +13,11 @@ repositories {
 dependencies {
     compile 'com.typesafe.akka:akka-actor-typed_2.13:2.6.0'
     compile 'ch.qos.logback:logback-classic:1.2.3'
-    testCompile 'com.typesafe.akka:akka-actor-testkit-typed_2.13:2.6.0'
-    testCompile 'junit:junit:4.12'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    testCompile 'junit:junit:4.12'
+    testCompile 'com.typesafe.akka:akka-actor-testkit-typed_2.13:2.6.0'
+    testCompile 'org.assertj:assertj-core:3.11.1'
     testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.6.0'
 }
 
