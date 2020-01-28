@@ -1,12 +1,12 @@
 package eu.bwbw.bridge
 
 import akka.actor.typed.ActorSystem
-import eu.bwbw.bridge.GreeterMain.SayHello
 import java.io.IOException
 
 fun main() {
-    val greeterMain = ActorSystem.create<SayHello>(GreeterMain.create(), "helloakka")
+    val greeterMain = ActorSystem.create<Command>(GreeterMain.create(), "helloakka")
 
+    greeterMain.tell(SaySomething("testing the use of sealed class"))
     greeterMain.tell(SayHello("Charles"))
 
     try {
