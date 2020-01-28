@@ -4,7 +4,9 @@ import eu.bwbw.bridge.domain.Config
 import eu.bwbw.bridge.domain.ConstructionWorker
 import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.domain.Operation
+import eu.bwbw.bridge.domain.errors.MissingAbilityDefinitionError
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.Before
 import org.junit.Test
 
@@ -28,6 +30,30 @@ class ConfigLoaderTest {
                 {
                     "name": "Bob",
                     "abilities": ["build-anchorage"]
+                }
+            ]
+        }   
+    """
+
+    private val incorrectConfigJson = """
+        {
+            "initialState": [{"name": "concrete"}],
+            "goalState": [
+                {"name": "deck"},
+                {"name": "anchorage", "instance": "left"}
+            ],
+            "abilities": [
+                {
+                    "name": "build-anchorage",
+                    "preconditions": [{"name": "concrete"}],
+                    "adds": [{"name": "anchorage", "instance": "ANY"}],
+                    "deletes": [{"name": "concrete"}]
+                }
+            ],
+            "workers": [
+                {
+                    "name": "Bob",
+                    "abilities": ["build-deck"]
                 }
             ]
         }   
@@ -69,7 +95,13 @@ class ConfigLoaderTest {
     }
 
     @Test
-    fun load() {
+    fun load_loadsConfigurationCorrectly() {
         assertThat(configLoader.load(configJson)).isEqualTo(expectedConfig)
+    }
+
+    @Test
+    fun load_throwsForMissingAbilityDefinition() {
+        assertThatExceptionOfType(MissingAbilityDefinitionError::class.java)
+            .isThrownBy { configLoader.load(incorrectConfigJson) }
     }
 }
