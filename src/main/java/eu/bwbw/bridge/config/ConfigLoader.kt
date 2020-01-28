@@ -26,20 +26,24 @@ class ConfigLoader {
     }
 
     fun load(configJson: String): Config {
-        val parsedConfig = Gson().fromJson<ConfigSchema>(configJson, ConfigSchema::class.java)
+        val (initialState, goalState, workers, abilities) = Gson().fromJson<ConfigSchema>(configJson, ConfigSchema::class.java)
 
-        val workers = parsedConfig.workers.map { worker ->
-            val abilityList = worker.abilities.map { abilityName ->
-                val ability = parsedConfig.abilities.find { it.name == abilityName }
-                ability ?: throw MissingAbilityDefinitionError(abilityName)
-            }
-            ConstructionWorker(worker.name, abilityList.toSet())
-        }.toSet()
+        val constructionWorkers = workers.map { toConstructionWorker(it, abilities) }
 
         return Config(
-            parsedConfig.initialState.toSet(),
-            parsedConfig.goalState.toSet(),
-            workers
+            initialState.toSet(),
+            goalState.toSet(),
+            constructionWorkers.toSet()
         )
+    }
+
+    private fun toConstructionWorker(worker: ConstructionWorkerSchema, abilities: List<Operation>): ConstructionWorker {
+        val abilityList = worker.abilities.map { getAbilityForName(it, abilities) }
+        return ConstructionWorker(worker.name, abilityList.toSet())
+    }
+
+    private fun getAbilityForName(abilityName: String, abilities: List<Operation>): Operation {
+        val ability = abilities.find { it.name == abilityName }
+        return ability ?: throw MissingAbilityDefinitionError(abilityName)
     }
 }
