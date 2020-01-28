@@ -28,7 +28,7 @@ class GreeterBot private constructor(context: ActorContext<Greeted>, private val
 
     companion object {
         fun create(max: Int): Behavior<Greeted> =
-                Behaviors.setup { context: ActorContext<Greeted> -> GreeterBot(context, max) }
+            Behaviors.setup { context: ActorContext<Greeted> -> GreeterBot(context, max) }
     }
 
 }

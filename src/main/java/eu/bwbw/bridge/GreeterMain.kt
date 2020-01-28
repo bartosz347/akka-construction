@@ -9,8 +9,8 @@ import eu.bwbw.bridge.Greeter.Greeted
 import eu.bwbw.bridge.utils.AbstractBehaviorKT
 
 sealed class Command
-data class SayHello(val name: String): Command()
-data class SaySomething(val something: String): Command()
+data class SayHello(val name: String) : Command()
+data class SaySomething(val something: String) : Command()
 
 
 class GreeterMain private constructor(context: ActorContext<Command>) : AbstractBehaviorKT<Command>(context) {
