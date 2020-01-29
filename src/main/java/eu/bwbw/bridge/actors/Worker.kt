@@ -3,6 +3,7 @@ package eu.bwbw.bridge.actors
 import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
+import eu.bwbw.bridge.domain.commands.AcceptAchieveGoalOffer
 import eu.bwbw.bridge.domain.commands.AchieveGoalRequest
 import eu.bwbw.bridge.domain.commands.TestCommand
 import eu.bwbw.bridge.domain.commands.WorkerCommand
@@ -14,10 +15,15 @@ class Worker private constructor(
 ) : AbstractBehaviorKT<WorkerCommand>(context) {
 
     override fun onMessage(msg: WorkerCommand): Behavior<WorkerCommand> {
-        when (msg) {
-            is AchieveGoalRequest -> context.log.info("Worker received goal request")
-            is TestCommand -> context.log.info("Worker received test message")
+        return when (msg) {
+            is TestCommand -> onTestCommand()
+            is AchieveGoalRequest -> TODO()
+            is AcceptAchieveGoalOffer -> TODO()
         }
+    }
+    
+    private fun onTestCommand(): Behavior<WorkerCommand> {
+        context.log.info("Worker received test message")
         return this
     }
 

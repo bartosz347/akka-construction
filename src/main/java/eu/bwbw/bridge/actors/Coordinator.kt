@@ -5,10 +5,7 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
 import eu.bwbw.bridge.domain.Config
-import eu.bwbw.bridge.domain.commands.CoordinatorCommand
-import eu.bwbw.bridge.domain.commands.StartConstructing
-import eu.bwbw.bridge.domain.commands.TestCommand
-import eu.bwbw.bridge.domain.commands.WorkerCommand
+import eu.bwbw.bridge.domain.commands.*
 import eu.bwbw.bridge.utils.AbstractBehaviorKT
 
 
@@ -20,19 +17,21 @@ class Coordinator private constructor(
     private var workers: MutableList<ActorRef<WorkerCommand>> = ArrayList()
 
     override fun onMessage(msg: CoordinatorCommand): Behavior<CoordinatorCommand> {
-        when (msg) {
-            is StartConstructing -> {
-                workers.addAll(
-                    listOf(
-                        context.spawn(Worker.create(), "worker1"),
-                        context.spawn(Worker.create(), "worker2")
-                    )
-                )
+        return when (msg) {
+            is StartConstructing -> onStartConstructing()
+            is AchieveGoalOffer -> TODO()
+        }
+    }
 
-                workers.forEach {
-                    it.tell(TestCommand(""))
-                }
-            }
+    private fun onStartConstructing(): Behavior<CoordinatorCommand> {
+        workers.addAll(
+            listOf(
+                context.spawn(Worker.create(), "worker1"),
+                context.spawn(Worker.create(), "worker2")
+            )
+        )
+        workers.forEach {
+            it.tell(TestCommand(""))
         }
         return this
     }
