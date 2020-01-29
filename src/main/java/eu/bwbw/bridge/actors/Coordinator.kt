@@ -15,7 +15,7 @@ class Coordinator private constructor(
     context: ActorContext<CoordinatorCommand>
 ) : AbstractBehaviorKT<CoordinatorCommand>(context) {
 
-    private var workers: MutableList<ActorRef<WorkerCommand>> = ArrayList();
+    private var workers: MutableList<ActorRef<WorkerCommand>> = ArrayList()
 
     override fun onMessage(msg: CoordinatorCommand): Behavior<CoordinatorCommand> {
         when (msg) {
@@ -36,9 +36,7 @@ class Coordinator private constructor(
     }
 
     companion object {
-        fun create(): Behavior<CoordinatorCommand> = Behaviors.setup { context: ActorContext<CoordinatorCommand> ->
-            Coordinator(context)
-        }
+        fun create(): Behavior<CoordinatorCommand> = Behaviors.setup(::Coordinator)
     }
 
 }

@@ -22,9 +22,7 @@ class Worker private constructor(
     }
 
     companion object {
-        fun create(): Behavior<WorkerCommand> = Behaviors.setup { context: ActorContext<WorkerCommand> ->
-            Worker(context)
-        }
+        fun create(): Behavior<WorkerCommand> = Behaviors.setup(::Worker)
     }
 }
 

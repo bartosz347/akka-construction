@@ -39,9 +39,7 @@ class Supervisor private constructor(
     }
 
     companion object {
-        fun create(): Behavior<SupervisorCommand> = Behaviors.setup { context: ActorContext<SupervisorCommand> ->
-            Supervisor(context)
-        }
+        fun create(): Behavior<SupervisorCommand> = Behaviors.setup(::Supervisor)
     }
 }
 
