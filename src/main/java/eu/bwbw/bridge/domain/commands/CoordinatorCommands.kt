@@ -6,8 +6,8 @@ import eu.bwbw.bridge.domain.Goal
 sealed class CoordinatorCommand
 sealed class WorkerCommand : CoordinatorCommand()
 
-class StartConstructing : CoordinatorCommand()
-class ConstructingStarted : CoordinatorCommand()
+object StartConstructing : CoordinatorCommand()
+object ConstructingStarted : CoordinatorCommand()
 
 data class TestCommand(
     val info: String

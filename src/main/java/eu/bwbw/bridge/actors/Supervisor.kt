@@ -23,7 +23,7 @@ class Supervisor private constructor(
         when (msg) {
             is Begin -> {
                 coordinator = context.spawn(Coordinator.create(), "coordinator")
-                coordinator?.tell(StartConstructing())
+                coordinator?.tell(StartConstructing)
 
                 // TODO check if message has been delivered
 /*                context.ask(

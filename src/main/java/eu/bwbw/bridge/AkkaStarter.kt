@@ -8,7 +8,7 @@ import java.io.IOException
 
 fun main() {
     val supervisor = ActorSystem.create<SupervisorCommand>(Supervisor.create(), "supervisor")
-    supervisor.tell(Begin())
+    supervisor.tell(Begin)
 
     try {
         println(">>> Press ENTER to exit <<<")

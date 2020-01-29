@@ -1,4 +1,4 @@
 package eu.bwbw.bridge.domain.commands
 
 sealed class SupervisorCommand
-class Begin : SupervisorCommand()
+object Begin : SupervisorCommand()
