@@ -4,42 +4,35 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
-import akka.japi.function.Function2
-import eu.bwbw.bridge.domain.commands.Begin
 import eu.bwbw.bridge.domain.commands.CoordinatorCommand
 import eu.bwbw.bridge.domain.commands.StartConstructing
-import eu.bwbw.bridge.domain.commands.SupervisorCommand
 import eu.bwbw.bridge.utils.AbstractBehaviorKT
+import eu.bwbw.bridge.utils.send
 
 
 class Supervisor private constructor(
-    context: ActorContext<SupervisorCommand>
-) : AbstractBehaviorKT<SupervisorCommand>(context) {
+    context: ActorContext<Command>
+) : AbstractBehaviorKT<Supervisor.Command>(context) {
+    sealed class Command {
+        object Begin : Command()
+    }
 
-    private var coordinator: ActorRef<CoordinatorCommand>? = null
+    private lateinit var coordinator: ActorRef<CoordinatorCommand>
 
-    override fun onMessage(msg: SupervisorCommand): Behavior<SupervisorCommand> {
-        val k = Function2 { arg1: Int, arg2: Int -> }
-        when (msg) {
-            is Begin -> {
-                coordinator = context.spawn(Coordinator.create(), "coordinator")
-                coordinator?.tell(StartConstructing)
-
-                // TODO check if message has been delivered
-/*                context.ask(
-                    ConstructingStarted::class.java,
-                    coordinator,
-                    Duration.ofSeconds(4),
-                      { it: ActorRef<CoordinatorCommand> -> ConstructingStarted() },
-                      {arg1, arg2 -> ConstructingStarted()}
-                )*/
-            }
+    override fun onMessage(msg: Command): Behavior<Command> {
+        return when (msg) {
+            is Command.Begin -> onBegin()
         }
+    }
+
+    private fun onBegin(): Behavior<Command> {
+        coordinator = context.spawn(Coordinator.create(), "coordinator")
+        coordinator send StartConstructing
         return this
     }
 
     companion object {
-        fun create(): Behavior<SupervisorCommand> = Behaviors.setup(::Supervisor)
+        fun create(): Behavior<Command> = Behaviors.setup(::Supervisor)
     }
 }
 
