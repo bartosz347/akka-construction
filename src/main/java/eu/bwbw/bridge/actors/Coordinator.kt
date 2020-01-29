@@ -4,6 +4,7 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
+import eu.bwbw.bridge.domain.Config
 import eu.bwbw.bridge.domain.commands.CoordinatorCommand
 import eu.bwbw.bridge.domain.commands.StartConstructing
 import eu.bwbw.bridge.domain.commands.TestCommand
@@ -12,6 +13,7 @@ import eu.bwbw.bridge.utils.AbstractBehaviorKT
 
 
 class Coordinator private constructor(
+    val config: Config,
     context: ActorContext<CoordinatorCommand>
 ) : AbstractBehaviorKT<CoordinatorCommand>(context) {
 
@@ -36,7 +38,7 @@ class Coordinator private constructor(
     }
 
     companion object {
-        fun create(): Behavior<CoordinatorCommand> = Behaviors.setup(::Coordinator)
+        fun create(config: Config): Behavior<CoordinatorCommand> = Behaviors.setup { context -> Coordinator(config, context) }
     }
 
 }
