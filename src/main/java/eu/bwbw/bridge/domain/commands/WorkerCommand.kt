@@ -5,9 +5,7 @@ import eu.bwbw.bridge.domain.Goal
 
 sealed class WorkerCommand
 
-data class TestCommand(
-    val info: String
-) : WorkerCommand()
+object TestCommand : WorkerCommand()
 
 data class AchieveGoalRequest(
     val initialState: List<Goal>,

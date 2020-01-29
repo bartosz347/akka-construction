@@ -12,7 +12,7 @@ import eu.bwbw.bridge.utils.send
 
 
 class Supervisor private constructor(
-    val config: Config,
+    private val config: Config,
     context: ActorContext<Command>
 ) : AbstractBehaviorKT<Supervisor.Command>(context) {
     sealed class Command {
