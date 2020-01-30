@@ -1,6 +1,7 @@
 package eu.bwbw.bridge.algorithms
 
 import eu.bwbw.bridge.domain.Goal
+import eu.bwbw.bridge.domain.IOperation
 import eu.bwbw.bridge.domain.Operation
 
 class GeneralProblemSolver {
@@ -9,17 +10,55 @@ class GeneralProblemSolver {
         val appliedOperators: List<Operation>
     )
 
+    data class GpsOperator(
+        override val name: String,
+        override val preconditions: Set<Goal>,
+        override val adds: Set<Goal>,
+        override val deletes: Set<Goal>,
+        var applicationOrder: Int = -1
+    ) : IOperation {
+        companion object {
+            fun fromOperation(operation: Operation): GpsOperator {
+                return with(operation) {
+                    GpsOperator(
+                        name,
+                        preconditions,
+                        adds,
+                        deletes,
+                        -1
+                    )
+                }
+            }
+
+            fun toOperation(gpsOperator: GpsOperator): Operation {
+                return with(gpsOperator) {
+                    Operation(
+                        name,
+                        preconditions,
+                        adds,
+                        deletes
+                    )
+                }
+            }
+        }
+
+    }
+
     fun run(initialStates: List<Goal>, targetStates: List<Goal>, operators: Set<Operation>): gpsResult {
-        val finalStates = achieveAll(initialStates, operators, targetStates, emptyList()) ?: emptyList()
+        val gpsOperators: Set<GpsOperator> = operators.map(GpsOperator.Companion::fromOperation).toSet()
+
+        val finalStates = achieveAll(initialStates, gpsOperators, targetStates, emptyList()) ?: emptyList()
         return gpsResult(
             finalStates = finalStates,
             appliedOperators =
-            if (finalStates.isNotEmpty()) operators.sortedBy { operation -> operation.applicationOrder }.filter { it.applicationOrder >= 0 }
+            if (finalStates.isNotEmpty()) gpsOperators.sortedBy { operation -> operation.applicationOrder }
+                .filter { it.applicationOrder >= 0 }
+                .map(GpsOperator.Companion::toOperation)
             else emptyList()
         )
     }
 
-    private fun achieveAll(statesIn: List<Goal>, operators: Set<Operation>, goals: List<Goal>, goalStack: List<Goal>): List<Goal>? {
+    private fun achieveAll(statesIn: List<Goal>, operators: Set<GpsOperator>, goals: List<Goal>, goalStack: List<Goal>): List<Goal>? {
         var states = statesIn
 
         for (goal in goals) {
@@ -40,7 +79,7 @@ class GeneralProblemSolver {
         return states;
     }
 
-    private fun achieve(states: List<Goal>, operators: Set<Operation>, goal: Goal, goalStack: List<Goal>): List<Goal>? {
+    private fun achieve(states: List<Goal>, operators: Set<GpsOperator>, goal: Goal, goalStack: List<Goal>): List<Goal>? {
         if (states.contains(goal)) {
             return states
         }
@@ -63,13 +102,13 @@ class GeneralProblemSolver {
         return null
     }
 
-    private fun applyOperator(operator: Operation, states: List<Goal>, operators: Set<Operation>, goal: Goal, goalStack: List<Goal>): List<Goal>? {
+    private fun applyOperator(operator: GpsOperator, states: List<Goal>, operators: Set<GpsOperator>, goal: Goal, goalStack: List<Goal>): List<Goal>? {
         val result = achieveAll(states, operators, operator.preconditions.toList(), goalStack + listOf(goal))
             ?: return null
 
         val addList = operator.adds
         val deleteList = operator.deletes
-        operator.applicationOrder = (operators.map { o: Operation -> o.applicationOrder }.max() ?: -1) + 1
+        operator.applicationOrder = (operators.map { o: GpsOperator -> o.applicationOrder }.max() ?: -1) + 1
 
         return result.filter { !deleteList.contains(it) } + addList
     }
