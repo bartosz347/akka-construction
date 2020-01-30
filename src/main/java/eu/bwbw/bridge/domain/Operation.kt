@@ -5,6 +5,6 @@ data class Operation(
         val preconditions: Set<Goal>,
         val adds: Set<Goal>,
         val deletes: Set<Goal>,
-        var applied: Boolean = false
+        var applicationOrder: Int = -1
 ) {
 }

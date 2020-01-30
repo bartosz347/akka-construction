@@ -1,6 +1,6 @@
 package eu.bwbw.bridge.domain.commands
 
-import com.sun.xml.internal.bind.v2.TODO
+import akka.actor.typed.ActorRef
 import eu.bwbw.bridge.domain.Goal
 
 sealed class WorkerCommand
@@ -9,9 +9,11 @@ object TestCommand : WorkerCommand()
 
 data class AchieveGoalRequest(
     val initialState: List<Goal>,
-    val goalState: List<Goal>
+    val goalState: List<Goal>,
+    val from: ActorRef<CoordinatorCommand>
 ) : WorkerCommand()
 
 data class AcceptAchieveGoalOffer(
-    val todo: TODO
+    val goal: Goal,
+    val initialState: List<Goal>
 ) : WorkerCommand()

@@ -1,6 +1,7 @@
 package eu.bwbw.bridge.domain.commands
 
-import com.sun.xml.internal.bind.v2.TODO
+import akka.actor.typed.ActorRef
+import eu.bwbw.bridge.domain.Goal
 
 sealed class CoordinatorCommand
 
@@ -9,5 +10,6 @@ object StartConstructing : CoordinatorCommand()
 sealed class WorkerResponse : CoordinatorCommand()
 
 data class AchieveGoalOffer(
-    val todo: TODO
+    val from: ActorRef<WorkerCommand>,
+    val goal: Goal
 ) : WorkerResponse()
