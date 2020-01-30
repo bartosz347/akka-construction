@@ -4,10 +4,19 @@ import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.domain.Operation
 
 class GeneralProblemSolver {
+    data class gpsResult(
+        val finalStates: List<Goal>,
+        val appliedOperators: List<Operation>
+    )
 
-    fun run(initialStates: List<Goal>, targetStates: List<Goal>, operators: Set<Operation>): List<Operation> {
-        val finalStates = achieveAll(initialStates, operators, targetStates, emptyList()) ?: return emptyList()
-        return operators.filter { it.applied }
+    fun run(initialStates: List<Goal>, targetStates: List<Goal>, operators: Set<Operation>): gpsResult {
+        val finalStates = achieveAll(initialStates, operators, targetStates, emptyList()) ?: emptyList()
+        return gpsResult(
+            finalStates = finalStates,
+            appliedOperators =
+            if (finalStates.isNotEmpty()) operators.sortedBy { operation -> operation.applicationOrder }.filter { it.applicationOrder >= 0 }
+            else emptyList()
+        )
     }
 
     private fun achieveAll(statesIn: List<Goal>, operators: Set<Operation>, goals: List<Goal>, goalStack: List<Goal>): List<Goal>? {
@@ -56,11 +65,11 @@ class GeneralProblemSolver {
 
     private fun applyOperator(operator: Operation, states: List<Goal>, operators: Set<Operation>, goal: Goal, goalStack: List<Goal>): List<Goal>? {
         val result = achieveAll(states, operators, operator.preconditions.toList(), goalStack + listOf(goal))
-                ?: return null
+            ?: return null
 
         val addList = operator.adds
         val deleteList = operator.deletes
-        operator.applied = true;
+        operator.applicationOrder = (operators.map { o: Operation -> o.applicationOrder }.max() ?: -1) + 1
 
         return result.filter { !deleteList.contains(it) } + addList
     }
