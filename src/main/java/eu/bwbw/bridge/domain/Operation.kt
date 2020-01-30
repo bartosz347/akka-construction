@@ -1,10 +1,8 @@
 package eu.bwbw.bridge.domain
 
 data class Operation(
-        val name: String,
-        val preconditions: Set<Goal>,
-        val adds: Set<Goal>,
-        val deletes: Set<Goal>,
-        var applied: Boolean = false
-) {
-}
+    override val name: String,
+    override val preconditions: Set<Goal>,
+    override val adds: Set<Goal>,
+    override val deletes: Set<Goal>
+) : IOperation

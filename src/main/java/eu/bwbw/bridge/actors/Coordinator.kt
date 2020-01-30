@@ -20,13 +20,24 @@ class Coordinator private constructor(
     override fun onMessage(msg: CoordinatorCommand): Behavior<CoordinatorCommand> {
         return when (msg) {
             is StartConstructing -> onStartConstructing()
-            is AchieveGoalOffer -> TODO()
+            is AchieveGoalOffer -> onAchieveGoalOffer(msg)
         }
     }
 
     private fun onStartConstructing(): Behavior<CoordinatorCommand> {
         workers = config.workers.map { context.spawn(Worker.create(it.abilities), it.name) }
-        workers.forEach { it send TestCommand }
+        workers.forEach {
+            it send AchieveGoalRequest(
+                config.initialState.toList(),
+                config.goalState.toList(),
+                context.self
+            )
+        }
+        return this
+    }
+
+    private fun onAchieveGoalOffer(msg: AchieveGoalOffer): Behavior<CoordinatorCommand> {
+        context.log.info("Worker ${msg.from.path().name()} offers: ${msg.goal}")
         return this
     }
 
