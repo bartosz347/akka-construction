@@ -5,8 +5,8 @@ import eu.bwbw.bridge.domain.IOperation
 import eu.bwbw.bridge.domain.Operation
 
 class GeneralProblemSolver {
-    data class gpsResult(
-        val finalStates: List<Goal>,
+    data class GpsResult(
+        val finalStates: Set<Goal>,
         val appliedOperators: List<Operation>
     )
 
@@ -44,12 +44,12 @@ class GeneralProblemSolver {
 
     }
 
-    fun run(initialStates: List<Goal>, targetStates: List<Goal>, operators: Set<Operation>): gpsResult {
+    fun run(initialStates: List<Goal>, targetStates: List<Goal>, operators: Set<Operation>): GpsResult {
         val gpsOperators: Set<GpsOperator> = operators.map(GpsOperator.Companion::fromOperation).toSet()
 
         val finalStates = achieveAll(initialStates, gpsOperators, targetStates, emptyList()) ?: emptyList()
-        return gpsResult(
-            finalStates = finalStates,
+        return GpsResult(
+            finalStates = finalStates.toSet(),
             appliedOperators =
             if (finalStates.isNotEmpty()) gpsOperators.sortedBy { operation -> operation.applicationOrder }
                 .filter { it.applicationOrder >= 0 }
@@ -76,7 +76,7 @@ class GeneralProblemSolver {
             }
         }
 
-        return states;
+        return states
     }
 
     private fun achieve(states: List<Goal>, operators: Set<GpsOperator>, goal: Goal, goalStack: List<Goal>): List<Goal>? {

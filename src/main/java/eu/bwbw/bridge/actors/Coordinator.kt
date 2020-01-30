@@ -5,44 +5,35 @@ import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
 import eu.bwbw.bridge.domain.Config
-import eu.bwbw.bridge.domain.commands.*
+import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.utils.AbstractBehaviorKT
-import eu.bwbw.bridge.utils.send
 
 
 class Coordinator private constructor(
     private val config: Config,
-    context: ActorContext<CoordinatorCommand>
-) : AbstractBehaviorKT<CoordinatorCommand>(context) {
+    context: ActorContext<Command>
+) : AbstractBehaviorKT<Coordinator.Command>(context) {
 
-    private lateinit var workers: List<ActorRef<WorkerCommand>>
+    private lateinit var workers: List<ActorRef<Worker.Command>>
+    private val currentState: MutableSet<Goal> = config.initialState.toMutableSet()
 
-    override fun onMessage(msg: CoordinatorCommand): Behavior<CoordinatorCommand> {
+    override fun onMessage(msg: Command): Behavior<Command> {
         return when (msg) {
-            is StartConstructing -> onStartConstructing()
-            is AchieveGoalOffer -> onAchieveGoalOffer(msg)
+            is Command.StartConstructing -> onStartConstructing()
         }
     }
 
-    private fun onStartConstructing(): Behavior<CoordinatorCommand> {
-        workers = config.workers.map { context.spawn(Worker.create(it.abilities), it.name) }
-        workers.forEach {
-            it send AchieveGoalRequest(
-                config.initialState.toList(),
-                config.goalState.toList(),
-                context.self
-            )
-        }
-        return this
-    }
-
-    private fun onAchieveGoalOffer(msg: AchieveGoalOffer): Behavior<CoordinatorCommand> {
-        context.log.info("Worker ${msg.from.path().name()} offers: ${msg.goal}")
+    private fun onStartConstructing(): Behavior<Command> {
+        // TODO spawn planner and send start planning command
         return this
     }
 
     companion object {
-        fun create(config: Config): Behavior<CoordinatorCommand> = Behaviors.setup { context -> Coordinator(config, context) }
+        fun create(config: Config): Behavior<Command> = Behaviors.setup { context -> Coordinator(config, context) }
+    }
+
+    sealed class Command {
+        object StartConstructing : Command()
     }
 }
 
