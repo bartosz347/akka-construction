@@ -24,7 +24,11 @@
         },
         {
             "name": "Dave",
-            "abilities": ["build-tower-foundation"]
+            "abilities": [
+                "build-tower-foundation",
+                "build-tower-foundation-step-01-insert-piles",
+                "build-tower-foundation-step-02-isolate-water"
+            ]
         },
         {
             "name": "Andrew",
@@ -32,7 +36,11 @@
         },
         {
             "name": "Sam",
-            "abilities": ["lay-suspension-cable"]
+            "abilities": [
+                "lay-suspension-cable",
+                "lay-suspension-cable-step-01-prepare-mounting-points",
+                "lay-suspension-cable-step-02-setup-crane"
+            ]
         },
         {
             "name": "Peter",
@@ -90,7 +98,9 @@
             "preconditions": [
                 {"name": "concrete"},
                 {"name": "anchorage", "instance": "left"},
-                {"name": "anchorage", "instance": "right"}
+                {"name": "anchorage", "instance": "right"},
+                {"name": "piles-inserted"},
+                {"name": "water-isolated"}
             ],
             "adds": [{"name": "tower-foundation", "instance": "ANY"}],
             "deletes": [{"name": "concrete"}]
@@ -98,27 +108,17 @@
         {
             "name": "build-tower-foundation-step-01-insert-piles",
             "preconditions": [
-                {"name": "concrete"},
-                {"name": "anchorage", "instance": "left"},
-                {"name": "anchorage", "instance": "right"}
+                {"name": "piles"}
             ],
-            "adds": [{"name": "tower-foundation", "instance": "ANY"}],
-            "deletes": [{"name": "concrete"}]
+            "adds": [{"name": "piles-inserted"}],
+            "deletes": [{"name": "piles"}]
         },
         {
             "name": "build-tower-foundation-step-02-isolate-water",
-            "preconditions": [
-                {"name": "concrete"},
-                {"name": "anchorage", "instance": "left"},
-                {"name": "anchorage", "instance": "right"}
-            ],
-            "adds": [{"name": "tower-foundation", "instance": "ANY"}],
-            "deletes": [{"name": "concrete"}]
+            "preconditions": [],
+            "adds": [{"name": "water-isolated"}],
+            "deletes": []
         },
-
-
-
-
         {
             "name": "build-tower-upper",
             "preconditions": [
@@ -131,6 +131,9 @@
             "adds": [{"name": "tower-upper", "instance": "ANY"}],
             "deletes": [{"name": "concrete"}]
         },
+
+
+
         {
             "name": "lay-suspension-cable",
             "preconditions": [
@@ -140,11 +143,31 @@
                 {"name": "tower-foundation", "instance": "right"},
                 {"name": "tower-upper", "instance": "left"},
                 {"name": "tower-upper", "instance": "right"},
-                {"name": "cables"}
+                {"name": "cables"},
+                {"name": "mounting-points-prepared"},
+                {"name": "crane-ready"}
             ],
             "adds": [{"name": "suspension-cable", "instance": "ANY"}],
             "deletes": [{"name": "cables"}]
         },
+        {
+            "name": "lay-suspension-cable-step-01-prepare-mounting-points",
+            "preconditions": [],
+            "adds": [{"name": "mounting-points-prepared"}],
+            "deletes": []
+        },
+        {
+            "name": "lay-suspension-cable-step-02-setup-crane",
+            "preconditions": [],
+            "adds": [{"name": "crane-ready"}],
+            "deletes": []
+        },
+
+
+
+
+
+
         {
             "name": "build-deck",
             "preconditions": [
