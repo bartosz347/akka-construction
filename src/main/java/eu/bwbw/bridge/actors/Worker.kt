@@ -23,7 +23,7 @@ class Worker private constructor(
     private val name: String
         get() = context.self.path().name()
 
-    private val offers: HashMap<Pair<Goal, Set<Goal>>, List<Operation>> = HashMap()
+    private val offers: HashMap<Goal, List<Operation>> = HashMap()
 
     override fun onMessage(msg: Command): Behavior<Command> {
         return when (msg) {
@@ -38,7 +38,7 @@ class Worker private constructor(
             // TODO consider running gps for larger subsets of goalState
             val gpsResult = gps.run(msg.initialState.toList(), listOf(goal), abilities)
             if (gpsResult.finalStates.isNotEmpty()) {
-                offers[Pair(goal, msg.initialState)] = gpsResult.appliedOperators
+                offers[goal] = gpsResult.appliedOperators
                 val goalInResult = gpsResult.finalStates.find { it.name == goal.name } ?: throw Error("this should never happen")
                 val finalState = gpsResult.finalStates.minus(goalInResult).plus(goal).toSet()
                 planner send OffersCollector.Command.AchieveGoalOffer(context.self, goal, finalState, gpsResult.appliedOperators.size)
@@ -49,7 +49,7 @@ class Worker private constructor(
     }
 
     private fun onStartWorking(msg: Command.StartWorking): Behavior<Command> {
-        val operations = offers[Pair(msg.goal, msg.initialState)] ?: throw Error("this should never happen")
+        val operations = offers[msg.goal] ?: throw Error("this should never happen")
         context.log.info("Start working on goal: ${msg.goal}")
         operations.forEach {
             context.log.info("Doing $it")

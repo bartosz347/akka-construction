@@ -37,7 +37,6 @@ class CoordinatorTest {
         testKit = TestKitJunitResource()
     }
 
-    @Ignore("WIP")
     @Test
     fun `handles work planning and dispatching correctly`() {
         val testProbe = testKit.createTestProbe<Planner.Command>()
