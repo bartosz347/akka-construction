@@ -20,9 +20,10 @@ class Planner private constructor(
     var isPlanning = false
 
     override fun onMessage(msg: Command): Behavior<Command> {
-        return when(msg) {
+        return when (msg) {
             is Command.StartPlanning -> onStartPlanning()
             is Command.OffersCollected -> onOffersCollected(msg)
+            is Command.FinishPlanning -> Behaviors.stopped()
         }
     }
 
@@ -31,7 +32,8 @@ class Planner private constructor(
             return this
         }
         isPlanning = true
-        val offersCollector = context.spawn(OffersCollector.create(context.self, Duration.ofSeconds(5), workers.size), "offers-collector") // TODO extract timeout parameter
+        val timeout = Duration.ofHours(5) // TODO extract timeout parameter
+        val offersCollector = context.spawn(OffersCollector.create(context.self, timeout, workers.size), "offers-collector")
         offersCollector send OffersCollector.Command.StartOrTimeout
         workers.forEach {
             it send Worker.Command.AchieveGoalRequest(
@@ -43,14 +45,13 @@ class Planner private constructor(
         return this
     }
 
-
     private fun onOffersCollected(msg: Command.OffersCollected): Behavior<Command> {
         val bestOffer = msg.offers.minBy { it.cost }
         if (bestOffer == null) {
             coordinator send Coordinator.Command.PlanningFailed
             return this
         }
-        coordinator send Coordinator.Command.IterationPlanned(bestOffer)
+        coordinator send Coordinator.Command.IterationPlanned(context.self, bestOffer)
         return this
     }
 
@@ -65,6 +66,7 @@ class Planner private constructor(
 
     sealed class Command {
         object StartPlanning : Command()
-        data class OffersCollected(val offers: Set<OffersCollector.Command.AchieveGoalOffer>): Command()
+        data class OffersCollected(val offers: Set<OffersCollector.Command.AchieveGoalOffer>) : Command()
+        object FinishPlanning : Command()
     }
 }

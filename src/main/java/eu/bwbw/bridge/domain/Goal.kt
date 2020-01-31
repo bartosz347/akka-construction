@@ -9,7 +9,7 @@ data class Goal(
 
     override fun equals(other: Any?): Boolean {
         return if (other is Goal)
-            name == other.name && (instance == other.instance || other.instance == "ANY" || instance == "ANY")
+            name == other.name && (instance == other.instance || other.instance == ANY || instance == ANY)
         else super.equals(other)
     }
 
@@ -22,5 +22,9 @@ data class Goal(
             return "($name)"
         }
         return "($name, $instance)"
+    }
+
+    companion object {
+        const val ANY = "ANY"
     }
 }
