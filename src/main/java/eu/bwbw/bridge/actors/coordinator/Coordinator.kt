@@ -65,7 +65,8 @@ class Coordinator private constructor(
     private fun onPlanningFailed(): Behavior<Command> {
         // TODO handle failed planning when waiting for certain preconditions
         // TODO handle failed planning when nothing in progress -> fail the whole construction
-        TODO("not implemented")
+        context.log.info("onPlanningFailed")
+        return this
     }
 
     private fun onWorkCompleted(msg: WorkCompleted): Behavior<Command> {
@@ -77,9 +78,10 @@ class Coordinator private constructor(
         workInProgress.remove(completedWork)
         currentState = currentState.plus(completedWork.achievedGoal)
         context.log.info("onWorkCompleted: currentState=$currentState, remainingGoals=$remainingGoals")
-//        startPlanningNextIteration()
         if (currentState == config.goalState) {
             supervisor send Supervisor.Command.CunstructionFinished
+        } else {
+            startPlanningNextIteration()
         }
         return this
     }
