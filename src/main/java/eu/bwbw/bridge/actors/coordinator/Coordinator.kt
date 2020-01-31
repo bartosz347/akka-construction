@@ -43,9 +43,7 @@ class Coordinator private constructor(
 
     private fun onIterationPlanned(msg: IterationPlanned): Behavior<Command> {
         msg.from send Planner.Command.FinishPlanning
-
         val (worker, goal, finalState, cost) = msg.plan
-
 
         workInProgress.add(Work(
             worker,
@@ -77,12 +75,13 @@ class Coordinator private constructor(
         workInProgress.remove(completedWork)
         val achievedGoals = completedWork.afterState.minus(completedWork.beforeState)
         currentState = currentState.plus(achievedGoals)
+        startPlanningNextIteration() // TODO check if it works
         return this
     }
 
     private fun startPlanningNextIteration() {
         val planner = context.spawn(
-            Planner.create(context.self, workers, currentState, remainingGoals),
+            Planner.create(context.self, workers, currentState, remainingGoals, config.offersCollectionTimeout),
             "planner-${++currentIteration}"
         )
         planner send Planner.Command.StartPlanning

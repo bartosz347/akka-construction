@@ -15,9 +15,10 @@ class Planner private constructor(
     private val workers: List<ActorRef<Worker.Command>>,
     private val currentState: Set<Goal>,
     private val goalState: Set<Goal>,
+    private val offersCollectionTimeout: Duration,
     context: ActorContext<Command>
 ) : AbstractBehaviorKT<Planner.Command>(context) {
-    var isPlanning = false
+    private var isPlanning = false
 
     override fun onMessage(msg: Command): Behavior<Command> {
         return when (msg) {
@@ -32,8 +33,10 @@ class Planner private constructor(
             return this
         }
         isPlanning = true
-        val timeout = Duration.ofHours(5) // TODO extract timeout parameter
-        val offersCollector = context.spawn(OffersCollector.create(context.self, timeout, workers.size), "offers-collector")
+        val offersCollector = context.spawn(
+            OffersCollector.create(context.self, offersCollectionTimeout, workers.size),
+            "offers-collector"
+        )
         offersCollector send OffersCollector.Command.StartOrTimeout
         workers.forEach {
             it send Worker.Command.AchieveGoalRequest(
@@ -60,8 +63,11 @@ class Planner private constructor(
             coordinator: ActorRef<Coordinator.Command>,
             workers: List<ActorRef<Worker.Command>>,
             currentState: Set<Goal>,
-            goalState: Set<Goal>
-        ): Behavior<Command> = Behaviors.setup { Planner(coordinator, workers, currentState, goalState, it) }
+            goalState: Set<Goal>,
+            offersCollectionTimeout: Duration
+        ): Behavior<Command> = Behaviors.setup {
+            Planner(coordinator, workers, currentState, goalState, offersCollectionTimeout, it)
+        }
     }
 
     sealed class Command {

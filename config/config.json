@@ -184,5 +184,6 @@
             "adds": [{"name": "deck", "instance": "ANY"}],
             "deletes": [{"name": "asphalt"}, {"name": "concrete"}]
         }
-    ]
+    ],
+    "offersCollectionTimeout": "5000"
 }

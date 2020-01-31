@@ -28,7 +28,8 @@ class CoordinatorTest {
         setOf(
             ConstructionWorker("Bob", setOf(buildAnchorageOperation)),
             ConstructionWorker("John", setOf(buildAnchorageOperation))
-        )
+        ),
+        Duration.ofMinutes(60)
     )
 
     @Before
