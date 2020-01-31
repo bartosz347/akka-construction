@@ -23,14 +23,14 @@ data class Operation(
 
     private fun setOfGoalsToString(goals: Set<Goal>): String {
         if (goals.isEmpty()) {
-            return "[]"
+            return "$name: []"
         }
 
         val result = goals.joinToString { it.toString() }
-        if (goals.size > 1) {
-            return "[$result]"
+        return "$name: " + if (goals.size > 1) {
+            "[$result]"
         } else {
-            return result
+            result
         }
     }
 }

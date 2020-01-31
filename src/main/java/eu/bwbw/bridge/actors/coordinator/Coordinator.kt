@@ -45,6 +45,8 @@ class Coordinator private constructor(
         msg.from send Planner.Command.FinishPlanning
 
         val (worker, goal, finalState, cost) = msg.plan
+        goal.instance = currentState.firstOrNull { g -> g.name == goal.name }?.instance
+
 
         workInProgress.add(Work(
             worker,

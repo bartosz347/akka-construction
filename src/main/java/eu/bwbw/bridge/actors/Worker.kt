@@ -48,6 +48,7 @@ class Worker private constructor(
 
     private fun onStartWorking(msg: Command.StartWorking): Behavior<Command> {
         val operations = offers[Pair(msg.goal, msg.initialState)] ?: throw Error("this should never happen")
+        context.log.info("Start working on goal: ${msg.goal}")
         operations.forEach {
             context.log.info("Doing $it")
             Thread.sleep(1000)
