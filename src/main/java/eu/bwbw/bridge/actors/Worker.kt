@@ -34,12 +34,14 @@ class Worker private constructor(
 
     private fun onAchieveGoalRequest(msg: Command.AchieveGoalRequest): Behavior<Command> {
         val planner = msg.from
-        msg.goalState.forEach {
+        msg.goalState.forEach { goal ->
             // TODO consider running gps for larger subsets of goalState
-            val gpsResult = gps.run(msg.initialState.toList(), listOf(it), abilities)
+            val gpsResult = gps.run(msg.initialState.toList(), listOf(goal), abilities)
             if (gpsResult.finalStates.isNotEmpty()) {
-                offers[Pair(it, msg.initialState)] = gpsResult.appliedOperators
-                planner send OffersCollector.Command.AchieveGoalOffer(context.self, it, gpsResult.finalStates, gpsResult.appliedOperators.size)
+                offers[Pair(goal, msg.initialState)] = gpsResult.appliedOperators
+                val goalInResult = gpsResult.finalStates.find { it.name == goal.name } ?: throw Error("this should never happen")
+                val finalState = gpsResult.finalStates.minus(goalInResult).plus(goal).toSet()
+                planner send OffersCollector.Command.AchieveGoalOffer(context.self, goal, finalState, gpsResult.appliedOperators.size)
             }
         }
         planner send OffersCollector.Command.FinishedOffering(context.self)

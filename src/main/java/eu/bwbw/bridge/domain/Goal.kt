@@ -2,7 +2,7 @@ package eu.bwbw.bridge.domain
 
 data class Goal(
     val name: String,
-    var instance: String? = null
+    val instance: String? = null
 ) {
     val isSingeInstance: Boolean
         get() = instance == null

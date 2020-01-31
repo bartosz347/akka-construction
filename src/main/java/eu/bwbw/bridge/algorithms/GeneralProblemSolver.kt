@@ -6,7 +6,7 @@ import eu.bwbw.bridge.domain.Operation
 
 class GeneralProblemSolver {
     data class GpsResult(
-        val finalStates: Set<Goal>,
+        val finalStates: List<Goal>,
         val appliedOperators: List<Operation>
     )
 
@@ -49,7 +49,7 @@ class GeneralProblemSolver {
 
         val finalStates = achieveAll(initialStates, gpsOperators, targetStates, emptyList()) ?: emptyList()
         return GpsResult(
-            finalStates = finalStates.toSet(),
+            finalStates = finalStates,
             appliedOperators =
             if (finalStates.isNotEmpty()) gpsOperators.sortedBy { operation -> operation.applicationOrder }
                 .filter { it.applicationOrder >= 0 }
