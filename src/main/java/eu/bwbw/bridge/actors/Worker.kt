@@ -4,6 +4,8 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
+import eu.bwbw.bridge.actors.coordinator.OffersCollector
+import eu.bwbw.bridge.actors.coordinator.Planner
 import eu.bwbw.bridge.algorithms.GeneralProblemSolver
 import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.domain.Operation
@@ -35,10 +37,10 @@ class Worker private constructor(
             val gpsResult = gps.run(msg.initialState.toList(), listOf(it), abilities)
             if (gpsResult.finalStates.isNotEmpty()) {
                 offers[Pair(it, msg.initialState)] = gpsResult.appliedOperators
-                planner send Planner.Command.AchieveGoalOffer(context.self, it, gpsResult.finalStates)
+                planner send OffersCollector.Command.AchieveGoalOffer(context.self, it, gpsResult.finalStates)
             }
         }
-        planner send Planner.Command.FinishedOffering(context.self)
+        planner send OffersCollector.Command.FinishedOffering(context.self)
         return this
     }
 
@@ -51,7 +53,7 @@ class Worker private constructor(
         data class AchieveGoalRequest(
             val initialState: Set<Goal>,
             val goalState: Set<Goal>,
-            val from: ActorRef<Planner.Command>
+            val from: ActorRef<OffersCollector.Command>
         ) : Command()
 
         data class AcceptAchieveGoalOffer(val goal: Goal, val initialState: List<Goal>) : Command()

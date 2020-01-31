@@ -1,12 +1,15 @@
-package eu.bwbw.bridge.actors
+package eu.bwbw.bridge.actors.coordinator
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
+import eu.bwbw.bridge.actors.Worker
+import eu.bwbw.bridge.actors.coordinator.Coordinator.Command.*
 import eu.bwbw.bridge.domain.Config
 import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.utils.AbstractBehaviorKT
+import eu.bwbw.bridge.utils.send
 
 
 class Coordinator private constructor(
@@ -19,13 +22,25 @@ class Coordinator private constructor(
 
     override fun onMessage(msg: Command): Behavior<Command> {
         return when (msg) {
-            is Command.StartConstructing -> onStartConstructing()
+            is StartConstructing -> onStartConstructing()
+            is IterationPlanned -> onIterationPlanned(msg)
+            is PlanningFailed -> onPlanningFailed()
         }
     }
 
     private fun onStartConstructing(): Behavior<Command> {
-        // TODO spawn planner and send start planning command
+        workers = config.workers.map { context.spawn(Worker.create(it.abilities), it.name) }
+        val planner = context.spawn(Planner.create(context.self, workers, currentState, config.goalState), "planner")
+        planner send Planner.Command.StartPlanning
         return this
+    }
+
+    private fun onIterationPlanned(msg: IterationPlanned): Behavior<Command> {
+        TODO("not implemented")
+    }
+
+    private fun onPlanningFailed(): Behavior<Command> {
+        TODO("not implemented")
     }
 
     companion object {
@@ -34,6 +49,8 @@ class Coordinator private constructor(
 
     sealed class Command {
         object StartConstructing : Command()
+        data class IterationPlanned(val plan: OffersCollector.Command.AchieveGoalOffer) : Command()
+        object PlanningFailed : Command()
     }
 }
 
