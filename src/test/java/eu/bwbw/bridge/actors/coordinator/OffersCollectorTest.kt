@@ -38,7 +38,7 @@ class OffersCollectorTest {
         val collector = testKit.spawn(OffersCollector.create(planner.ref, timeout, 1), "collector")
         collector send OffersCollector.Command.StartOrTimeout
 
-        val achieveGoalOffer = OffersCollector.Command.AchieveGoalOffer(worker.ref, Goal("goal"), setOf())
+        val achieveGoalOffer = OffersCollector.Command.AchieveGoalOffer(worker.ref, Goal("goal"), setOf(), 0)
         collector send achieveGoalOffer
         collector send OffersCollector.Command.FinishedOffering(worker.ref)
 

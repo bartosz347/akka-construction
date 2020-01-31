@@ -31,7 +31,8 @@ class Planner private constructor(
             return this
         }
         isPlanning = true
-        val offersCollector = context.spawn(OffersCollector.create(context.self, Duration.ofSeconds(5), workers.size), "offers-collector")
+        val offersCollector = context.spawn(OffersCollector.create(context.self, Duration.ofSeconds(5), workers.size), "offers-collector") // TODO extract timeout parameter
+        offersCollector send OffersCollector.Command.StartOrTimeout
         workers.forEach {
             it send Worker.Command.AchieveGoalRequest(
                 currentState,

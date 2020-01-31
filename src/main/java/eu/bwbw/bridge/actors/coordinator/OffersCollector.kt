@@ -81,7 +81,7 @@ class OffersCollector private constructor(
             val worker: ActorRef<Worker.Command>,
             val achievedGoal: Goal,
             val finalState: Set<Goal>,
-            val cost: Int = 0 // TODO change
+            val cost: Int
         ) : Command()
 
         data class FinishedOffering(val from: ActorRef<Worker.Command>) : Command()
