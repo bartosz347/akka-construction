@@ -39,9 +39,13 @@ class Worker private constructor(
             val gpsResult = gps.run(msg.initialState.toList(), listOf(goal), abilities)
             if (gpsResult.finalStates.isNotEmpty()) {
                 offers[goal] = gpsResult.appliedOperators
-                val goalInResult = gpsResult.finalStates.find { it.name == goal.name } ?: throw Error("this should never happen")
+
+                val goalInResult = gpsResult.finalStates.find { it.name == goal.name }
+                    ?: throw Error("this should never happen")
                 val finalState = gpsResult.finalStates.minus(goalInResult).plus(goal).toSet()
-                planner send OffersCollector.Command.AchieveGoalOffer(context.self, goal, finalState, gpsResult.appliedOperators.size)
+
+                val consumed = msg.initialState.minus(finalState)
+                planner send OffersCollector.Command.AchieveGoalOffer(context.self, goal, consumed, gpsResult.appliedOperators.size)
             }
         }
         planner send OffersCollector.Command.FinishedOffering(context.self)
@@ -53,7 +57,9 @@ class Worker private constructor(
         context.log.info("Start working on goal: ${msg.goal}")
         operations.forEach {
             context.log.info("Doing $it")
-            Thread.sleep(1000)
+            context.log.info("Worker $name goes to sleep")
+            Thread.sleep(20000)
+            context.log.info("Worker $name wakes up")
         }
         coordinator send Coordinator.Command.WorkCompleted(context.self)
         return this

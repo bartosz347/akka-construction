@@ -13,6 +13,7 @@ import java.time.Duration
 class Planner private constructor(
     private val coordinator: ActorRef<Coordinator.Command>,
     private val workers: List<ActorRef<Worker.Command>>,
+    private val iteration: Int,
     private val currentState: Set<Goal>,
     private val goalState: Set<Goal>,
     private val offersCollectionTimeout: Duration,
@@ -35,7 +36,7 @@ class Planner private constructor(
         isPlanning = true
         val offersCollector = context.spawn(
             OffersCollector.create(context.self, offersCollectionTimeout, workers.size),
-            "offers-collector"
+            "offers-collector-$iteration"
         )
         offersCollector send OffersCollector.Command.StartOrTimeout
         workers.forEach {
@@ -62,11 +63,12 @@ class Planner private constructor(
         fun create(
             coordinator: ActorRef<Coordinator.Command>,
             workers: List<ActorRef<Worker.Command>>,
+            iteration: Int,
             currentState: Set<Goal>,
             goalState: Set<Goal>,
             offersCollectionTimeout: Duration
         ): Behavior<Command> = Behaviors.setup {
-            Planner(coordinator, workers, currentState, goalState, offersCollectionTimeout, it)
+            Planner(coordinator, workers, iteration, currentState, goalState, offersCollectionTimeout, it)
         }
     }
 

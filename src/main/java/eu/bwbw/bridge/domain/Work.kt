@@ -5,6 +5,6 @@ import eu.bwbw.bridge.actors.Worker
 
 data class Work(
     val worker: ActorRef<Worker.Command>,
-    val beforeState: Set<Goal>,
-    val afterState: Set<Goal>
+    val achievedGoal: Goal,
+    val consumedResources: Set<Goal>
 )

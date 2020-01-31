@@ -1,6 +1,7 @@
 package eu.bwbw.bridge.actors.coordinator
 
 import akka.actor.testkit.typed.javadsl.TestKitJunitResource
+import eu.bwbw.bridge.actors.Supervisor
 import eu.bwbw.bridge.domain.Config
 import eu.bwbw.bridge.domain.ConstructionWorker
 import eu.bwbw.bridge.domain.Goal
@@ -8,7 +9,6 @@ import eu.bwbw.bridge.domain.Goal.Companion.ANY
 import eu.bwbw.bridge.domain.Operation
 import eu.bwbw.bridge.utils.send
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import java.time.Duration
 
@@ -29,7 +29,7 @@ class CoordinatorTest {
             ConstructionWorker("Bob", setOf(buildAnchorageOperation)),
             ConstructionWorker("John", setOf(buildAnchorageOperation))
         ),
-        Duration.ofMinutes(60)
+        Duration.ofSeconds(5)
     )
 
     @Before
@@ -39,21 +39,11 @@ class CoordinatorTest {
 
     @Test
     fun `handles work planning and dispatching correctly`() {
-        val testProbe = testKit.createTestProbe<Planner.Command>()
+        val supervisor = testKit.createTestProbe<Supervisor.Command>()
 
-        val coordinator = testKit.spawn(Coordinator.create(config))
+        val coordinator = testKit.spawn(Coordinator.create(supervisor.ref, config))
         coordinator send Coordinator.Command.StartConstructing
 
-
-        testProbe.expectTerminated(coordinator, Duration.ofHours(5))
-
-//        val timeout = Duration.ofSeconds(1)
-//        val planner = testKit.createTestProbe<Planner.Command>()
-//
-//        val collector = testKit.spawn(OffersCollector.create(planner.ref, timeout, 3), "collector")
-//        collector send OffersCollector.Command.StartOrTimeout
-//
-//        planner.expectMessage(Duration.ofSeconds(2), Planner.Command.OffersCollected(setOf()))
-//        planner.expectTerminated(collector)
+        supervisor.expectMessage(Duration.ofMinutes(1), Supervisor.Command.CunstructionFinished)
     }
 }

@@ -4,6 +4,7 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
+import eu.bwbw.bridge.actors.Supervisor
 import eu.bwbw.bridge.actors.Worker
 import eu.bwbw.bridge.actors.coordinator.Coordinator.Command.*
 import eu.bwbw.bridge.domain.Config
@@ -13,6 +14,7 @@ import eu.bwbw.bridge.utils.AbstractBehaviorKT
 import eu.bwbw.bridge.utils.send
 
 class Coordinator private constructor(
+    private val supervisor: ActorRef<Supervisor.Command>,
     private val config: Config,
     context: ActorContext<Command>
 ) : AbstractBehaviorKT<Coordinator.Command>(context) {
@@ -42,17 +44,17 @@ class Coordinator private constructor(
     }
 
     private fun onIterationPlanned(msg: IterationPlanned): Behavior<Command> {
+        context.log.info("onIterationPlanned: currentState=$currentState, remainingGoals=$remainingGoals")
         msg.from send Planner.Command.FinishPlanning
-        val (worker, goal, finalState, cost) = msg.plan
+        val (worker, goal, consumedResources, cost) = msg.plan
 
         workInProgress.add(Work(
             worker,
-            currentState,
-            finalState
+            goal,
+            consumedResources
         ))
-        currentState = currentState.intersect(finalState) // FIXME handle ANY correctly
-        val achievedGoals = finalState.minus(currentState)
-        remainingGoals = remainingGoals.minus(achievedGoals)
+        currentState = currentState.minus(consumedResources)
+        remainingGoals = remainingGoals.minus(goal)
         totalCost += cost
 
         worker send Worker.Command.StartWorking(goal, currentState)
@@ -73,22 +75,32 @@ class Coordinator private constructor(
             return this
         }
         workInProgress.remove(completedWork)
-        val achievedGoals = completedWork.afterState.minus(completedWork.beforeState)
-        currentState = currentState.plus(achievedGoals)
-        startPlanningNextIteration() // TODO check if it works
+        currentState = currentState.plus(completedWork.achievedGoal)
+        context.log.info("onWorkCompleted: currentState=$currentState, remainingGoals=$remainingGoals")
+//        startPlanningNextIteration()
+        if (currentState == config.goalState) {
+            supervisor send Supervisor.Command.CunstructionFinished
+        }
         return this
     }
 
     private fun startPlanningNextIteration() {
+        if (remainingGoals.isEmpty()) {
+            return
+        }
+        val iteration = ++currentIteration
         val planner = context.spawn(
-            Planner.create(context.self, workers, currentState, remainingGoals, config.offersCollectionTimeout),
-            "planner-${++currentIteration}"
+            Planner.create(context.self, workers, iteration, currentState, remainingGoals, config.offersCollectionTimeout),
+            "planner-$iteration"
         )
         planner send Planner.Command.StartPlanning
     }
 
     companion object {
-        fun create(config: Config): Behavior<Command> = Behaviors.setup { context -> Coordinator(config, context) }
+        fun create(
+            supervisor: ActorRef<Supervisor.Command>,
+            config: Config
+        ): Behavior<Command> = Behaviors.setup { context -> Coordinator(supervisor, config, context) }
     }
 
     sealed class Command {
@@ -97,8 +109,9 @@ class Coordinator private constructor(
             val from: ActorRef<Planner.Command>,
             val plan: OffersCollector.Command.AchieveGoalOffer
         ) : Command()
+
         object PlanningFailed : Command()
-        data class WorkCompleted(val worker: ActorRef<Worker.Command>): Command()
+        data class WorkCompleted(val worker: ActorRef<Worker.Command>) : Command()
     }
 }
 
