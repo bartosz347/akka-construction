@@ -5,3 +5,8 @@ data class Config(
         val goalState: Set<Goal>,
         val workers: Set<ConstructionWorker>
 )
+
+data class ConstructionWorker(
+    val name: String,
+    val abilities: Set<Operation>
+)
