@@ -40,6 +40,8 @@ class Coordinator private constructor(
     }
 
     private fun onPlanningFailed(): Behavior<Command> {
+        // TODO handle failed planning when waiting for certain preconditions
+        // TODO handle failed planning when nothing in progress -> fail the whole construction
         TODO("not implemented")
     }
 
