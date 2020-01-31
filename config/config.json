@@ -1,5 +1,18 @@
 {
-    "initialState": [{"name": "concrete"}, {"name": "cables"}, {"name": "asphalt"}, {"name": "piles"}],
+    "initialState": [
+        {"name": "concrete", "instance": "1"},
+        {"name": "concrete", "instance": "2"},
+        {"name": "concrete", "instance": "3"},
+        {"name": "concrete", "instance": "4"},
+        {"name": "concrete", "instance": "5"},
+        {"name": "concrete", "instance": "6"},
+        {"name": "concrete", "instance": "7"},
+        {"name": "cables", "instance": "1"},
+        {"name": "cables", "instance": "2"},
+        {"name": "asphalt", "instance": "1"},
+        {"name": "piles", "instance": "1"},
+        {"name": "piles", "instance": "2"}
+    ],
     "goalState": [
         {"name": "anchorage", "instance": "left"},
         {"name": "anchorage", "instance": "right"},
@@ -83,35 +96,32 @@
         {
             "name": "build-anchorage-step-04-lay-concrete",
             "preconditions": [
-                {"name": "concrete"},
+                {"name": "concrete", "instance": "ANY"},
                 {"name": "hook-inserted", "instance": "support"},
                 {"name": "hook-inserted", "instance": "main"}
             ],
             "adds": [{"name": "concrete-laid"}],
-            "deletes": [{"name": "concrete"}, {"name": "hole-dug"}]
+            "deletes": [{"name": "concrete", "instance": "ANY"}, {"name": "hole-dug"}]
         },
-
-
-
         {
             "name": "build-tower-foundation",
             "preconditions": [
-                {"name": "concrete"},
+                {"name": "concrete", "instance": "ANY"},
                 {"name": "anchorage", "instance": "left"},
                 {"name": "anchorage", "instance": "right"},
                 {"name": "piles-inserted"},
                 {"name": "water-isolated"}
             ],
             "adds": [{"name": "tower-foundation", "instance": "ANY"}],
-            "deletes": [{"name": "concrete"}]
+            "deletes": [{"name": "concrete", "instance": "ANY"}]
         },
         {
             "name": "build-tower-foundation-step-01-insert-piles",
             "preconditions": [
-                {"name": "piles"}
+                {"name": "piles", "instance": "ANY"}
             ],
             "adds": [{"name": "piles-inserted"}],
-            "deletes": [{"name": "piles"}]
+            "deletes": [{"name": "piles", "instance": "ANY"}]
         },
         {
             "name": "build-tower-foundation-step-02-isolate-water",
@@ -122,18 +132,15 @@
         {
             "name": "build-tower-upper",
             "preconditions": [
-                {"name": "concrete"},
+                {"name": "concrete", "instance": "ANY"},
                 {"name": "anchorage", "instance": "left"},
                 {"name": "anchorage", "instance": "right"},
                 {"name": "tower-foundation", "instance": "left"},
                 {"name": "tower-foundation", "instance": "right"}
             ],
             "adds": [{"name": "tower-upper", "instance": "ANY"}],
-            "deletes": [{"name": "concrete"}]
+            "deletes": [{"name": "concrete", "instance": "ANY"}]
         },
-
-
-
         {
             "name": "lay-suspension-cable",
             "preconditions": [
@@ -143,12 +150,12 @@
                 {"name": "tower-foundation", "instance": "right"},
                 {"name": "tower-upper", "instance": "left"},
                 {"name": "tower-upper", "instance": "right"},
-                {"name": "cables"},
+                {"name": "cables", "instance": "ANY"},
                 {"name": "mounting-points-prepared"},
                 {"name": "crane-ready"}
             ],
             "adds": [{"name": "suspension-cable", "instance": "ANY"}],
-            "deletes": [{"name": "cables"}]
+            "deletes": [{"name": "cables", "instance": "ANY"}]
         },
         {
             "name": "lay-suspension-cable-step-01-prepare-mounting-points",
@@ -162,12 +169,6 @@
             "adds": [{"name": "crane-ready"}],
             "deletes": []
         },
-
-
-
-
-
-
         {
             "name": "build-deck",
             "preconditions": [
@@ -179,11 +180,11 @@
                 {"name": "tower-upper", "instance": "right"},
                 {"name": "suspension-cable", "instance": "left"},
                 {"name": "suspension-cable", "instance": "right"},
-                {"name": "asphalt"}, {"name": "concrete"}
+                {"name": "asphalt", "instance": "ANY"}, {"name": "concrete", "instance": "ANY"}
             ],
             "adds": [{"name": "deck", "instance": "ANY"}],
-            "deletes": [{"name": "asphalt"}, {"name": "concrete"}]
+            "deletes": [{"name": "asphalt", "instance": "ANY"}, {"name": "concrete", "instance": "ANY"}]
         }
     ],
-    "offersCollectionTimeout": "5000"
+    "offersCollectionTimeout": "500"
 }

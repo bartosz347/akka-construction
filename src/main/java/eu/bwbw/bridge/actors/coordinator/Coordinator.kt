@@ -78,7 +78,7 @@ class Coordinator private constructor(
         workInProgress.remove(completedWork)
         currentState = currentState.plus(completedWork.achievedGoal)
         context.log.info("onWorkCompleted: currentState=$currentState, remainingGoals=$remainingGoals")
-        if (currentState == config.goalState) {
+        if (currentState.containsAll(config.goalState)) {
             supervisor send Supervisor.Command.CunstructionFinished
         } else {
             startPlanningNextIteration()

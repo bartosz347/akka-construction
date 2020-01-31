@@ -56,9 +56,8 @@ class Worker private constructor(
         val operations = offers[msg.goal] ?: throw Error("this should never happen")
         context.log.info("Start working on goal: ${msg.goal}")
         operations.forEach {
-            context.log.info("Doing $it")
-            context.log.info("Worker $name goes to sleep")
-            Thread.sleep(20000)
+            context.log.info("Doing $it, goes to sleep")
+            Thread.sleep(1000)
             context.log.info("Worker $name wakes up")
         }
         coordinator send Coordinator.Command.WorkCompleted(context.self)
