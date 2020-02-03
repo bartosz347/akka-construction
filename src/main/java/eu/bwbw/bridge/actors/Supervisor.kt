@@ -19,7 +19,7 @@ class Supervisor private constructor(
     override fun onMessage(msg: Command): Behavior<Command> {
         return when (msg) {
             is Command.Begin -> onBegin()
-            is Command.CunstructionFinished -> onConstructionFinished()
+            is Command.ConstructionFinished -> onConstructionFinished()
         }
     }
 
@@ -40,7 +40,7 @@ class Supervisor private constructor(
 
     sealed class Command {
         object Begin : Command()
-        object CunstructionFinished : Command()
+        object ConstructionFinished : Command()
     }
 }
 

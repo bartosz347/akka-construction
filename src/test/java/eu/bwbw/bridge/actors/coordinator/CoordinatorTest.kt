@@ -44,6 +44,6 @@ class CoordinatorTest {
         val coordinator = testKit.spawn(Coordinator.create(supervisor.ref, config))
         coordinator send Coordinator.Command.StartConstructing
 
-        supervisor.expectMessage(Duration.ofMinutes(1), Supervisor.Command.CunstructionFinished)
+        supervisor.expectMessage(Duration.ofMinutes(1), Supervisor.Command.ConstructionFinished)
     }
 }
