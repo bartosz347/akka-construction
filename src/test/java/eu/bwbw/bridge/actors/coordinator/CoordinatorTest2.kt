@@ -16,10 +16,10 @@ class CoordinatorTest2 {
     private lateinit var testKit: TestKitJunitResource
 
     private val buildAnchorageOperation = Operation(
-        "build-anchorage",
-        setOf(Goal("concrete", ANY)),
-        setOf(Goal("anchorage", ANY)),
-        setOf(Goal("concrete", ANY))
+        name = "build-anchorage",
+        preconditions = setOf(Goal("concrete", ANY)),
+        adds = setOf(Goal("anchorage", ANY)),
+        deletes = setOf(Goal("concrete", ANY))
     )
 
     private val buildDeckOperation = Operation(
@@ -30,14 +30,14 @@ class CoordinatorTest2 {
     )
 
     private val config = Config(
-        setOf(Goal("concrete", "1"), Goal("concrete", "2"), Goal("concrete", "3")),
-        setOf(Goal("anchorage", "left"), Goal("anchorage", "right"), Goal("deck", "one")),
-        setOf(
+        initialState = setOf(Goal("concrete", "1"), Goal("concrete", "2"), Goal("concrete", "3")),
+        goalState = setOf(Goal("anchorage", "left"), Goal("anchorage", "right"), Goal("deck", "one")),
+        workers = setOf(
             ConstructionWorker("Bob", setOf(buildAnchorageOperation)),
             ConstructionWorker("John", setOf(buildAnchorageOperation)),
             ConstructionWorker("David", setOf(buildDeckOperation))
         ),
-        Duration.ofSeconds(5)
+        offersCollectionTimeout = Duration.ofSeconds(5)
     )
 
     @Before
