@@ -44,7 +44,7 @@ class Coordinator private constructor(
     }
 
     private fun onIterationPlanned(msg: IterationPlanned): Behavior<Command> {
-        context.log.info("onIterationPlanned: currentState=$currentState, remainingGoals=$remainingGoals")
+        context.log.info("Coordinator.onIterationPlanned: currentState=$currentState, remainingGoals=$remainingGoals")
         msg.from send Planner.Command.FinishPlanning
         val (worker, goal, consumedResources, cost) = msg.plan
 
@@ -63,9 +63,10 @@ class Coordinator private constructor(
     }
 
     private fun onPlanningFailed(): Behavior<Command> {
-        // TODO handle failed planning when waiting for certain preconditions
-        // TODO handle failed planning when nothing in progress -> fail the whole construction
-        context.log.info("onPlanningFailed")
+        context.log.info("Coordinator.onPlanningFailed")
+        if (workInProgress.isEmpty()) {
+            supervisor send Supervisor.Command.ConstructionFailed
+        }
         return this
     }
 
@@ -77,7 +78,7 @@ class Coordinator private constructor(
         }
         workInProgress.remove(completedWork)
         currentState = currentState.plus(completedWork.achievedGoal)
-        context.log.info("onWorkCompleted: currentState=$currentState, remainingGoals=$remainingGoals")
+        context.log.info("Coordinator.onWorkCompleted: currentState=$currentState, remainingGoals=$remainingGoals")
         if (currentState.containsAll(config.goalState)) {
             supervisor send Supervisor.Command.ConstructionFinished
         } else {

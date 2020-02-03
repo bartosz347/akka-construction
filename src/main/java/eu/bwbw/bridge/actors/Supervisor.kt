@@ -20,7 +20,13 @@ class Supervisor private constructor(
         return when (msg) {
             is Command.Begin -> onBegin()
             is Command.ConstructionFinished -> onConstructionFinished()
+            is Command.ConstructionFailed -> onConstructionFailed()
         }
+    }
+
+    private fun onConstructionFailed(): Behavior<Command> {
+        context.log.error("Supervisor.onConstructionFailed")
+        return Behaviors.stopped()
     }
 
     private fun onBegin(): Behavior<Command> {
@@ -30,7 +36,7 @@ class Supervisor private constructor(
     }
 
     private fun onConstructionFinished(): Behavior<Command> {
-        context.log.info("onConstructionFinished")
+        context.log.info("Supervisor.onConstructionFinished")
         return Behaviors.stopped()
     }
 
@@ -41,6 +47,7 @@ class Supervisor private constructor(
     sealed class Command {
         object Begin : Command()
         object ConstructionFinished : Command()
+        object ConstructionFailed: Command()
     }
 }
 
