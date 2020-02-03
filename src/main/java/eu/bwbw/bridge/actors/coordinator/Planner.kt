@@ -25,7 +25,6 @@ class Planner private constructor(
         return when (msg) {
             is Command.StartPlanning -> onStartPlanning()
             is Command.OffersCollected -> onOffersCollected(msg)
-            is Command.FinishPlanning -> Behaviors.stopped()
         }
     }
 
@@ -52,11 +51,11 @@ class Planner private constructor(
     private fun onOffersCollected(msg: Command.OffersCollected): Behavior<Command> {
         val bestOffer = msg.offers.minBy { it.cost }
         if (bestOffer == null) {
-            coordinator send Coordinator.Command.PlanningFailed
-            return this
+            coordinator send Coordinator.Command.PlanningFailed(iteration)
+        } else {
+            coordinator send Coordinator.Command.IterationPlanned(iteration, bestOffer)
         }
-        coordinator send Coordinator.Command.IterationPlanned(context.self, bestOffer)
-        return this
+        return Behaviors.stopped()
     }
 
     companion object {
@@ -75,6 +74,5 @@ class Planner private constructor(
     sealed class Command {
         object StartPlanning : Command()
         data class OffersCollected(val offers: Set<OffersCollector.Command.AchieveGoalOffer>) : Command()
-        object FinishPlanning : Command()
     }
 }

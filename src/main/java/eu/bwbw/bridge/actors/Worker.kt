@@ -56,11 +56,11 @@ class Worker private constructor(
 
     private fun onStartWorking(msg: Command.StartWorking): Behavior<Command> {
         val operations = offers[msg.goal] ?: throw Error("this should never happen")
-        context.log.info("Start working on goal: ${msg.goal}")
+        context.log.info("$name starts working on goal: ${msg.goal}")
         operations.forEach {
-            context.log.info("Doing $it, $name starts working")
+            context.log.info("$name: Doing $it")
             doWork()
-            context.log.info("Worker $name finished working")
+            context.log.info("$name finished working")
         }
         coordinator send Coordinator.Command.WorkCompleted(context.self)
         return this

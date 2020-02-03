@@ -7,6 +7,7 @@ import eu.bwbw.bridge.domain.ConstructionWorker
 import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.domain.Goal.Companion.ANY
 import eu.bwbw.bridge.domain.Operation
+import eu.bwbw.bridge.testutils.withinNext
 import eu.bwbw.bridge.utils.send
 import org.junit.Before
 import org.junit.Test
@@ -26,10 +27,10 @@ class CoordinatorTest {
         initialState = setOf(Goal("concrete", "1"), Goal("concrete", "2")),
         goalState = setOf(Goal("anchorage", "left"), Goal("anchorage", "right")),
         workers = setOf(
-            ConstructionWorker("Bob", setOf(buildAnchorageOperation)),
-            ConstructionWorker("John", setOf(buildAnchorageOperation))
+            ConstructionWorker("Bob", setOf(buildAnchorageOperation)) { Thread.sleep(300) },
+            ConstructionWorker("John", setOf(buildAnchorageOperation)) { Thread.sleep(200) }
         ),
-        offersCollectionTimeout = Duration.ofSeconds(5)
+        offersCollectionTimeout = Duration.ofMillis(50)
     )
 
     @Before
@@ -38,12 +39,17 @@ class CoordinatorTest {
     }
 
     @Test
-    fun `handles work planning and dispatching correctly`() {
+    fun `handles planning and dispatching of concurrent work correctly`() {
         val supervisor = testKit.createTestProbe<Supervisor.Command>()
 
         val coordinator = testKit.spawn(Coordinator.create(supervisor.ref, config))
         coordinator send Coordinator.Command.StartConstructing
 
-        supervisor.expectMessage(Duration.ofMinutes(1), Supervisor.Command.ConstructionFinished)
+        supervisor.expectNoMessage(withinNext(300))
+        supervisor.expectMessage(
+            withinNext(100),
+            "Workers should build simultaneously",
+            Supervisor.Command.ConstructionFinished
+        )
     }
 }

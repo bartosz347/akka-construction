@@ -32,7 +32,7 @@ class Coordinator private constructor(
         return when (msg) {
             is StartConstructing -> onStartConstructing()
             is IterationPlanned -> onIterationPlanned(msg)
-            is PlanningFailed -> onPlanningFailed()
+            is PlanningFailed -> onPlanningFailed(msg)
             is WorkCompleted -> onWorkCompleted(msg)
         }
     }
@@ -44,13 +44,16 @@ class Coordinator private constructor(
                 it.name
             )
         }
-        startPlanningNextIteration()
+        nextPlanningIteration()
         return this
     }
 
     private fun onIterationPlanned(msg: IterationPlanned): Behavior<Command> {
-        context.log.info("Coordinator.onIterationPlanned: currentState=$currentState, remainingGoals=$remainingGoals")
-        msg.from send Planner.Command.FinishPlanning
+        context.log.info("Coordinator.onIterationPlanned: currentState=$currentState, remainingGoals=$remainingGoals, workInProgress.size=${workInProgress.size}, currentIteration=$currentIteration, msg.iteration=${msg.iteration}")
+        if (msg.iteration != currentIteration) {
+            return this
+        }
+
         val (worker, goal, consumedResources, cost) = msg.plan
 
         workInProgress.add(Work(
@@ -63,13 +66,13 @@ class Coordinator private constructor(
         totalCost += cost
 
         worker send Worker.Command.StartWorking(goal, currentState)
-        startPlanningNextIteration()
+        nextPlanningIteration()
         return this
     }
 
-    private fun onPlanningFailed(): Behavior<Command> {
-        context.log.info("Coordinator.onPlanningFailed")
-        if (workInProgress.isEmpty()) {
+    private fun onPlanningFailed(msg: PlanningFailed): Behavior<Command> {
+        context.log.info("Coordinator.onPlanningFailed: workInProgress.size=${workInProgress.size}, currentIteration=$currentIteration, msg.iteration=${msg.iteration}")
+        if (msg.iteration == currentIteration && workInProgress.isEmpty()) {
             supervisor send Supervisor.Command.ConstructionFailed
         }
         return this
@@ -87,12 +90,12 @@ class Coordinator private constructor(
         if (currentState.containsAll(config.goalState)) {
             supervisor send Supervisor.Command.ConstructionFinished
         } else {
-            startPlanningNextIteration()
+            nextPlanningIteration()
         }
         return this
     }
 
-    private fun startPlanningNextIteration() {
+    private fun nextPlanningIteration() {
         if (remainingGoals.isEmpty()) {
             return
         }
@@ -113,12 +116,14 @@ class Coordinator private constructor(
 
     sealed class Command {
         object StartConstructing : Command()
+
         data class IterationPlanned(
-            val from: ActorRef<Planner.Command>,
+            val iteration: Int,
             val plan: OffersCollector.Command.AchieveGoalOffer
         ) : Command()
 
-        object PlanningFailed : Command()
+        data class PlanningFailed(val iteration: Int) : Command()
+
         data class WorkCompleted(val worker: ActorRef<Worker.Command>) : Command()
     }
 }

@@ -7,6 +7,7 @@ import eu.bwbw.bridge.domain.ConstructionWorker
 import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.domain.Goal.Companion.ANY
 import eu.bwbw.bridge.domain.Operation
+import eu.bwbw.bridge.testutils.withinNext
 import eu.bwbw.bridge.utils.send
 import org.junit.Before
 import org.junit.Test
@@ -33,11 +34,11 @@ class CoordinatorTest2 {
         initialState = setOf(Goal("concrete", "1"), Goal("concrete", "2"), Goal("concrete", "3")),
         goalState = setOf(Goal("anchorage", "left"), Goal("anchorage", "right"), Goal("deck", "one")),
         workers = setOf(
-            ConstructionWorker("Bob", setOf(buildAnchorageOperation)),
-            ConstructionWorker("John", setOf(buildAnchorageOperation)),
-            ConstructionWorker("David", setOf(buildDeckOperation))
+            ConstructionWorker("Bob", setOf(buildAnchorageOperation)) { Thread.sleep(200) },
+            ConstructionWorker("John", setOf(buildAnchorageOperation)) { Thread.sleep(200) },
+            ConstructionWorker("David", setOf(buildDeckOperation)) { Thread.sleep(200) }
         ),
-        offersCollectionTimeout = Duration.ofSeconds(5)
+        offersCollectionTimeout = Duration.ofMillis(50)
     )
 
     @Before
@@ -52,6 +53,10 @@ class CoordinatorTest2 {
         val coordinator = testKit.spawn(Coordinator.create(supervisor.ref, config))
         coordinator send Coordinator.Command.StartConstructing
 
-        supervisor.expectMessage(Duration.ofMinutes(1), Supervisor.Command.ConstructionFinished)
+        // Deck should be build after anchorages
+        supervisor.expectNoMessage(withinNext(400))
+
+        // Anchorages should be built within ~250ms, plus ~200ms for deck, the whole construction should finish in under 550ms
+        supervisor.expectMessage(withinNext(150), Supervisor.Command.ConstructionFinished)
     }
 }
