@@ -38,7 +38,12 @@ class Coordinator private constructor(
     }
 
     private fun onStartConstructing(): Behavior<Command> {
-        workers = config.workers.map { context.spawn(Worker.create(context.self, it.abilities), it.name) }
+        workers = config.workers.map {
+            context.spawn(
+                Worker.create(context.self, it.abilities, it.doWork),
+                it.name
+            )
+        }
         startPlanningNextIteration()
         return this
     }
