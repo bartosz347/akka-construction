@@ -37,7 +37,6 @@ class Worker private constructor(
     private fun onAchieveGoalRequest(msg: Command.AchieveGoalRequest): Behavior<Command> {
         val planner = msg.from
         msg.goalState.forEach { goal ->
-            // TODO consider running gps for larger subsets of goalState
             val gpsResult = gps.run(msg.initialState.toList(), listOf(goal), abilities)
             if (gpsResult.finalStates.isNotEmpty()) {
                 offers[goal] = gpsResult.appliedOperators
