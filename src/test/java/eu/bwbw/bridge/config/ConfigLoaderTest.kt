@@ -9,6 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.Before
 import org.junit.Test
+import java.time.Duration
 
 class ConfigLoaderTest {
     private val configJson = """
@@ -31,7 +32,8 @@ class ConfigLoaderTest {
                     "name": "Bob",
                     "abilities": ["build-anchorage"]
                 }
-            ]
+            ],
+            "offersCollectionTimeout": "5000"   
         }   
     """
 
@@ -55,7 +57,8 @@ class ConfigLoaderTest {
                     "name": "Bob",
                     "abilities": ["build-deck"]
                 }
-            ]
+            ],
+            "offersCollectionTimeout": "5000"
         }   
     """
 
@@ -82,7 +85,8 @@ class ConfigLoaderTest {
         expectedConfig = Config(
             initialState = setOf(concrete),
             goalState = setOf(deck, anchorageLeft),
-            workers = setOf(bob)
+            workers = setOf(bob),
+            offersCollectionTimeout = Duration.ofMillis(5000)
         )
     }
 

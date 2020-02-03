@@ -19,13 +19,19 @@ class Supervisor private constructor(
     override fun onMessage(msg: Command): Behavior<Command> {
         return when (msg) {
             is Command.Begin -> onBegin()
+            is Command.CunstructionFinished -> onConstructionFinished()
         }
     }
 
     private fun onBegin(): Behavior<Command> {
-        coordinator = context.spawn(Coordinator.create(config), "coordinator")
+        coordinator = context.spawn(Coordinator.create(context.self, config), "coordinator")
         coordinator send Coordinator.Command.StartConstructing
         return this
+    }
+
+    private fun onConstructionFinished(): Behavior<Command> {
+        context.log.info("onConstructionFinished")
+        return Behaviors.stopped()
     }
 
     companion object {
@@ -34,6 +40,7 @@ class Supervisor private constructor(
 
     sealed class Command {
         object Begin : Command()
+        object CunstructionFinished : Command()
     }
 }
 

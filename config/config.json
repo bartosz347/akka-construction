@@ -1,21 +1,190 @@
 {
-    "initialState": [{"name": "concrete"}],
+    "initialState": [
+        {"name": "concrete", "instance": "1"},
+        {"name": "concrete", "instance": "2"},
+        {"name": "concrete", "instance": "3"},
+        {"name": "concrete", "instance": "4"},
+        {"name": "concrete", "instance": "5"},
+        {"name": "concrete", "instance": "6"},
+        {"name": "concrete", "instance": "7"},
+        {"name": "cables", "instance": "1"},
+        {"name": "cables", "instance": "2"},
+        {"name": "asphalt", "instance": "1"},
+        {"name": "piles", "instance": "1"},
+        {"name": "piles", "instance": "2"}
+    ],
     "goalState": [
-        {"name": "deck"},
-        {"name": "anchorage", "instance": "left"}
+        {"name": "anchorage", "instance": "left"},
+        {"name": "anchorage", "instance": "right"},
+        {"name": "tower-foundation", "instance": "left"},
+        {"name": "tower-foundation", "instance": "right"},
+        {"name": "tower-upper", "instance": "left"},
+        {"name": "tower-upper", "instance": "right"},
+        {"name": "suspension-cable", "instance": "left"},
+        {"name": "suspension-cable", "instance": "right"},
+        {"name": "deck"}
     ],
     "workers": [
         {
             "name": "Bob",
-            "abilities": ["build-anchorage"]
+            "abilities": [
+                "build-anchorage",
+                "build-anchorage-step-01-dig-a-hole",
+                "build-anchorage-step-02-insert-support-hook",
+                "build-anchorage-step-03-insert-main-hook",
+                "build-anchorage-step-04-lay-concrete"
+            ]
+        },
+        {
+            "name": "Dave",
+            "abilities": [
+                "build-tower-foundation",
+                "build-tower-foundation-step-01-insert-piles",
+                "build-tower-foundation-step-02-isolate-water"
+            ]
+        },
+        {
+            "name": "Andrew",
+            "abilities": ["build-tower-upper"]
+        },
+        {
+            "name": "Sam",
+            "abilities": [
+                "lay-suspension-cable",
+                "lay-suspension-cable-step-01-prepare-mounting-points",
+                "lay-suspension-cable-step-02-setup-crane"
+            ]
+        },
+        {
+            "name": "Peter",
+            "abilities": ["build-deck"]
         }
     ],
     "abilities": [
         {
             "name": "build-anchorage",
-            "preconditions": [{"name": "concrete"}],
+            "preconditions": [
+                {"name": "hook-inserted", "instance": "support"},
+                {"name": "hook-inserted", "instance": "main"},
+                {"name": "concrete-laid"}
+            ],
             "adds": [{"name": "anchorage", "instance": "ANY"}],
-            "deletes": [{"name": "concrete"}]
+            "deletes": [
+                {"name": "hook-inserted", "instance": "support"},
+                {"name": "hook-inserted", "instance": "main"},
+                {"name": "concrete-laid"}
+            ]
+        },
+        {
+            "name": "build-anchorage-step-01-dig-a-hole",
+            "preconditions": [],
+            "adds": [{"name": "hole-dug"}],
+            "deletes": []
+        },
+        {
+            "name": "build-anchorage-step-02-insert-support-hook",
+            "preconditions": [{"name": "hole-dug"}],
+            "adds": [{"name": "hook-inserted", "instance": "support"}],
+            "deletes": []
+        },
+        {
+            "name": "build-anchorage-step-03-insert-main-hook",
+            "preconditions": [{"name": "hole-dug"}],
+            "adds": [{"name": "hook-inserted", "instance": "main"}],
+            "deletes": []
+        },
+        {
+            "name": "build-anchorage-step-04-lay-concrete",
+            "preconditions": [
+                {"name": "concrete", "instance": "ANY"},
+                {"name": "hook-inserted", "instance": "support"},
+                {"name": "hook-inserted", "instance": "main"}
+            ],
+            "adds": [{"name": "concrete-laid"}],
+            "deletes": [{"name": "concrete", "instance": "ANY"}, {"name": "hole-dug"}]
+        },
+        {
+            "name": "build-tower-foundation",
+            "preconditions": [
+                {"name": "concrete", "instance": "ANY"},
+                {"name": "anchorage", "instance": "left"},
+                {"name": "anchorage", "instance": "right"},
+                {"name": "piles-inserted"},
+                {"name": "water-isolated"}
+            ],
+            "adds": [{"name": "tower-foundation", "instance": "ANY"}],
+            "deletes": [{"name": "concrete", "instance": "ANY"}]
+        },
+        {
+            "name": "build-tower-foundation-step-01-insert-piles",
+            "preconditions": [
+                {"name": "piles", "instance": "ANY"}
+            ],
+            "adds": [{"name": "piles-inserted"}],
+            "deletes": [{"name": "piles", "instance": "ANY"}]
+        },
+        {
+            "name": "build-tower-foundation-step-02-isolate-water",
+            "preconditions": [],
+            "adds": [{"name": "water-isolated"}],
+            "deletes": []
+        },
+        {
+            "name": "build-tower-upper",
+            "preconditions": [
+                {"name": "concrete", "instance": "ANY"},
+                {"name": "anchorage", "instance": "left"},
+                {"name": "anchorage", "instance": "right"},
+                {"name": "tower-foundation", "instance": "left"},
+                {"name": "tower-foundation", "instance": "right"}
+            ],
+            "adds": [{"name": "tower-upper", "instance": "ANY"}],
+            "deletes": [{"name": "concrete", "instance": "ANY"}]
+        },
+        {
+            "name": "lay-suspension-cable",
+            "preconditions": [
+                {"name": "anchorage", "instance": "left"},
+                {"name": "anchorage", "instance": "right"},
+                {"name": "tower-foundation", "instance": "left"},
+                {"name": "tower-foundation", "instance": "right"},
+                {"name": "tower-upper", "instance": "left"},
+                {"name": "tower-upper", "instance": "right"},
+                {"name": "cables", "instance": "ANY"},
+                {"name": "mounting-points-prepared"},
+                {"name": "crane-ready"}
+            ],
+            "adds": [{"name": "suspension-cable", "instance": "ANY"}],
+            "deletes": [{"name": "cables", "instance": "ANY"}]
+        },
+        {
+            "name": "lay-suspension-cable-step-01-prepare-mounting-points",
+            "preconditions": [],
+            "adds": [{"name": "mounting-points-prepared"}],
+            "deletes": []
+        },
+        {
+            "name": "lay-suspension-cable-step-02-setup-crane",
+            "preconditions": [],
+            "adds": [{"name": "crane-ready"}],
+            "deletes": []
+        },
+        {
+            "name": "build-deck",
+            "preconditions": [
+                {"name": "anchorage", "instance": "left"},
+                {"name": "anchorage", "instance": "right"},
+                {"name": "tower-foundation", "instance": "left"},
+                {"name": "tower-foundation", "instance": "right"},
+                {"name": "tower-upper", "instance": "left"},
+                {"name": "tower-upper", "instance": "right"},
+                {"name": "suspension-cable", "instance": "left"},
+                {"name": "suspension-cable", "instance": "right"},
+                {"name": "asphalt", "instance": "ANY"}, {"name": "concrete", "instance": "ANY"}
+            ],
+            "adds": [{"name": "deck", "instance": "ANY"}],
+            "deletes": [{"name": "asphalt", "instance": "ANY"}, {"name": "concrete", "instance": "ANY"}]
         }
-    ]
+    ],
+    "offersCollectionTimeout": "500"
 }

@@ -6,7 +6,7 @@ import eu.bwbw.bridge.domain.Operation
 
 class GeneralProblemSolver {
     data class GpsResult(
-        val finalStates: Set<Goal>,
+        val finalStates: List<Goal>,
         val appliedOperators: List<Operation>
     )
 
@@ -49,7 +49,7 @@ class GeneralProblemSolver {
 
         val finalStates = achieveAll(initialStates, gpsOperators, targetStates, emptyList()) ?: emptyList()
         return GpsResult(
-            finalStates = finalStates.toSet(),
+            finalStates = finalStates,
             appliedOperators =
             if (finalStates.isNotEmpty()) gpsOperators.sortedBy { operation -> operation.applicationOrder }
                 .filter { it.applicationOrder >= 0 }
@@ -110,7 +110,20 @@ class GeneralProblemSolver {
         val deleteList = operator.deletes
         operator.applicationOrder = (operators.map { o: GpsOperator -> o.applicationOrder }.max() ?: -1) + 1
 
-        return result.filter { !deleteList.contains(it) } + addList
+
+        val removedResources: ArrayList<Goal> = ArrayList()
+
+        return result.filter { resultGoal: Goal ->
+            val toDelete = deleteList.find { it.name == resultGoal.name }
+            if (toDelete != null && toDelete.instance != Goal.ANY) {
+                false // remove
+            } else if (toDelete != null && toDelete.instance == Goal.ANY && !removedResources.contains(toDelete)) {
+                removedResources.add(toDelete)
+                false
+            } else {
+                true // keep
+            }
+        } + addList
     }
 
 

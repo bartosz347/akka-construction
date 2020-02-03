@@ -80,7 +80,7 @@ class OffersCollector private constructor(
         data class AchieveGoalOffer(
             val worker: ActorRef<Worker.Command>,
             val achievedGoal: Goal,
-            val finalState: Set<Goal>,
+            val consumedResources: Set<Goal>,
             val cost: Int
         ) : Command()
 

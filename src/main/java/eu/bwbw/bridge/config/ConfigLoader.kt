@@ -7,6 +7,7 @@ import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.domain.Operation
 import eu.bwbw.bridge.domain.errors.MissingAbilityDefinitionError
 import java.io.File
+import java.time.Duration
 
 class ConfigLoader {
     private data class ConstructionWorkerSchema(
@@ -18,7 +19,8 @@ class ConfigLoader {
             val initialState: List<Goal>,
             val goalState: List<Goal>,
             val workers: List<ConstructionWorkerSchema>,
-            val abilities: List<Operation>
+            val abilities: List<Operation>,
+            val offersCollectionTimeout: Long
     )
 
     fun load(configFile: File): Config {
@@ -26,14 +28,15 @@ class ConfigLoader {
     }
 
     fun load(configJson: String): Config {
-        val (initialState, goalState, workers, abilities) = Gson().fromJson<ConfigSchema>(configJson, ConfigSchema::class.java)
+        val (initialState, goalState, workers, abilities, timeout) = Gson().fromJson<ConfigSchema>(configJson, ConfigSchema::class.java)
 
         val constructionWorkers = workers.map { toConstructionWorker(it, abilities) }
 
         return Config(
             initialState.toSet(),
             goalState.toSet(),
-            constructionWorkers.toSet()
+            constructionWorkers.toSet(),
+            Duration.ofMillis(timeout)
         )
     }
 

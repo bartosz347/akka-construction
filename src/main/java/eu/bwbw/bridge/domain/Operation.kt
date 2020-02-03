@@ -18,7 +18,7 @@ data class Operation(
         val finalState = preconditions.toMutableSet()
         finalState.addAll(adds)
         finalState.removeAll(deletes)
-        return "${setOfGoalsToString(preconditions)} -> ${setOfGoalsToString(finalState)}"
+        return "$name: ${setOfGoalsToString(preconditions)} -> ${setOfGoalsToString(finalState)}"
     }
 
     private fun setOfGoalsToString(goals: Set<Goal>): String {
@@ -27,10 +27,10 @@ data class Operation(
         }
 
         val result = goals.joinToString { it.toString() }
-        if (goals.size > 1) {
-            return "[$result]"
+        return if (goals.size > 1) {
+            "[$result]"
         } else {
-            return result
+            result
         }
     }
 }

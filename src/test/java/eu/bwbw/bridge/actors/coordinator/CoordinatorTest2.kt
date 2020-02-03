@@ -12,7 +12,7 @@ import org.junit.Before
 import org.junit.Test
 import java.time.Duration
 
-class CoordinatorTest {
+class CoordinatorTest2 {
     private lateinit var testKit: TestKitJunitResource
 
     private val buildAnchorageOperation = Operation(
@@ -22,12 +22,20 @@ class CoordinatorTest {
         setOf(Goal("concrete", ANY))
     )
 
+    private val buildDeckOperation = Operation(
+        "build-deck",
+        setOf(Goal("concrete", ANY), Goal("anchorage", "left"), Goal("anchorage", "right")),
+        setOf(Goal("deck", "one")),
+        setOf(Goal("concrete", ANY))
+    )
+
     private val config = Config(
-        setOf(Goal("concrete", "1"), Goal("concrete", "2")),
-        setOf(Goal("anchorage", "left"), Goal("anchorage", "right")),
+        setOf(Goal("concrete", "1"), Goal("concrete", "2"), Goal("concrete", "3")),
+        setOf(Goal("anchorage", "left"), Goal("anchorage", "right"), Goal("deck", "one")),
         setOf(
             ConstructionWorker("Bob", setOf(buildAnchorageOperation)),
-            ConstructionWorker("John", setOf(buildAnchorageOperation))
+            ConstructionWorker("John", setOf(buildAnchorageOperation)),
+            ConstructionWorker("David", setOf(buildDeckOperation))
         ),
         Duration.ofSeconds(5)
     )
@@ -38,7 +46,7 @@ class CoordinatorTest {
     }
 
     @Test
-    fun `handles work planning and dispatching correctly`() {
+    fun `handles planning of sequential work`() {
         val supervisor = testKit.createTestProbe<Supervisor.Command>()
 
         val coordinator = testKit.spawn(Coordinator.create(supervisor.ref, config))
