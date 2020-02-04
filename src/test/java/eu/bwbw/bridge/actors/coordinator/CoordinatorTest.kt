@@ -2,6 +2,7 @@ package eu.bwbw.bridge.actors.coordinator
 
 import akka.actor.testkit.typed.javadsl.TestKitJunitResource
 import eu.bwbw.bridge.actors.Supervisor
+import eu.bwbw.bridge.actors.Worker
 import eu.bwbw.bridge.domain.Config
 import eu.bwbw.bridge.domain.ConstructionWorker
 import eu.bwbw.bridge.domain.Goal
@@ -85,5 +86,30 @@ class CoordinatorTest {
 
         // Anchorages should be built within ~250ms, plus ~200ms for deck, the whole construction should finish in under 550ms
         supervisor.expectMessage(withinNext(150), Supervisor.Command.ConstructionFinished)
+    }
+
+    @Test
+    fun `handles worker termination when exception in doWork occurs`() {
+        val goalState = Goal("anchorage", "ANY")
+        val initialState = setOf(concrete("1"))
+
+        val coordinator = testKit.createTestProbe<Coordinator.Command>()
+        val collector = testKit.createTestProbe<OffersCollector.Command>()
+        val worker = testKit.spawn(
+            Worker.create(
+                coordinator.ref(),
+                setOf(buildAnchorageOperation)
+            ) {
+                throw Error("worker crash")
+            }
+        )
+        worker send Worker.Command.AchieveGoalRequest(initialState, setOf(goalState), collector.ref)
+
+        worker send Worker.Command.StartWorking(
+            goalState,
+            initialState
+        )
+
+        coordinator.expectTerminated(worker, withinNext(500))
     }
 }
