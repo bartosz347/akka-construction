@@ -1,13 +1,14 @@
 package eu.bwbw.bridge.actors.coordinator
 
-import akka.actor.typed.ActorRef
-import akka.actor.typed.Behavior
+import akka.actor.typed.*
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
+import akka.actor.typed.javadsl.Receive
 import eu.bwbw.bridge.actors.Supervisor
 import eu.bwbw.bridge.actors.Worker
 import eu.bwbw.bridge.actors.coordinator.Coordinator.Command.*
 import eu.bwbw.bridge.domain.Config
+import eu.bwbw.bridge.domain.ConstructionWorker
 import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.domain.Work
 import eu.bwbw.bridge.utils.AbstractBehaviorKT
@@ -38,14 +39,15 @@ class Coordinator private constructor(
     }
 
     private fun onStartConstructing(): Behavior<Command> {
-        workers = config.workers.map {
-            context.spawn(
-                Worker.create(context.self, it.abilities, it.doWork),
-                it.name
-            )
-        }
+        workers = config.workers.map(::spawnNewWorker)
         nextPlanningIteration()
         return this
+    }
+
+    private fun spawnNewWorker(it: ConstructionWorker): ActorRef<Worker.Command> = context.spawn(
+        Worker.create(context.self, it.abilities, it.doWork), it.name
+    ).also {
+        context.watch(it)
     }
 
     private fun onIterationPlanned(msg: IterationPlanned): Behavior<Command> {
@@ -114,6 +116,51 @@ class Coordinator private constructor(
         ): Behavior<Command> = Behaviors.setup { context -> Coordinator(supervisor, config, context) }
     }
 
+    private fun onSignal(sig: Signal?): Behavior<Command> {
+        return when (sig) {
+            is ChildFailed -> onChildFailed(sig)
+            else -> return this
+        }
+    }
+
+    private fun onChildFailed(signal: Terminated): Coordinator {
+        context.log.info("Coordinator.onTerminated: ${signal.ref.path().name()} has terminated")
+        val terminatedWorker = workers.find { it == signal.ref }
+            ?: throw Error("This should never happen")
+
+        cleanupAfterWorker(terminatedWorker)
+
+        val newWorker = spawnNewWorker(
+            config.workers.find { terminatedWorker.path().name() == it.name }
+                ?: throw Error("This should never happen")
+        )
+
+        context.watch(newWorker)
+        workers = workers.plus(newWorker)
+        context.log.info("Coordinator.onTerminated: new worker spawned - ${newWorker.path().name()}")
+
+        nextPlanningIteration()
+        return this
+    }
+
+    private fun cleanupAfterWorker(terminatedWorker: ActorRef<Worker.Command>) {
+        workers = workers.minus(terminatedWorker)
+        context.unwatch(terminatedWorker)
+        context.log.info("Coordinator.onTerminated: removed terminated worker - ${terminatedWorker.path().name()}")
+
+        rollbackFailedWork(terminatedWorker)
+    }
+
+    private fun rollbackFailedWork(terminatedWorker: ActorRef<Worker.Command>) {
+        val failedWork = workInProgress.find { it.worker == terminatedWorker }
+        // workers can fail not only while working
+        failedWork?.let {
+            workInProgress.remove(failedWork)
+            remainingGoals = remainingGoals + failedWork.achievedGoal
+            currentState = currentState + failedWork.consumedResources
+        }
+    }
+
     sealed class Command {
         object StartConstructing : Command()
 
@@ -125,6 +172,11 @@ class Coordinator private constructor(
         data class PlanningFailed(val iteration: Int) : Command()
 
         data class WorkCompleted(val worker: ActorRef<Worker.Command>) : Command()
+    }
+
+    override fun createReceive(): Receive<Command> = object : Receive<Command>() {
+        override fun receiveMessage(msg: Command): Behavior<Command> = onMessage(msg)
+        override fun receiveSignal(sig: Signal?): Behavior<Command> = onSignal(sig)
     }
 }
 

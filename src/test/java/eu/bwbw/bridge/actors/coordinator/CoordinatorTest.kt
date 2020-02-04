@@ -112,4 +112,28 @@ class CoordinatorTest {
 
         coordinator.expectTerminated(worker, withinNext(500))
     }
+
+    @Test
+    fun `handles recovery after worker failure`() {
+        var shouldFail = true
+        val config = Config(
+            initialState = setOf(concrete("1")),
+            goalState = setOf(anchorage("left")),
+            workers = setOf(
+                ConstructionWorker("Bob", setOf(buildAnchorageOperation)) {
+                    if (shouldFail) {
+                        shouldFail = false;
+                        throw Error("worker crash")
+                    }
+                }
+            ),
+            offersCollectionTimeout = Duration.ofMillis(50)
+        )
+
+        val supervisor = testKit.createTestProbe<Supervisor.Command>()
+        val coordinator = testKit.spawn(Coordinator.create(supervisor.ref, config))
+        coordinator send Coordinator.Command.StartConstructing
+
+        supervisor.expectMessage(withinNext(150), Supervisor.Command.ConstructionFinished)
+    }
 }
