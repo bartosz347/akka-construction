@@ -9,6 +9,7 @@ import eu.bwbw.bridge.actors.coordinator.OffersCollector
 import eu.bwbw.bridge.algorithms.GeneralProblemSolver
 import eu.bwbw.bridge.domain.Goal
 import eu.bwbw.bridge.domain.Operation
+import eu.bwbw.bridge.domain.WorkerFunction
 import eu.bwbw.bridge.utils.AbstractBehaviorKT
 import eu.bwbw.bridge.utils.send
 
@@ -16,6 +17,7 @@ import eu.bwbw.bridge.utils.send
 class Worker private constructor(
     private val coordinator: ActorRef<Coordinator.Command>,
     private val abilities: Set<Operation>,
+    private val doWork: WorkerFunction,
     context: ActorContext<Command>
 ) : AbstractBehaviorKT<Worker.Command>(context) {
 
@@ -35,7 +37,6 @@ class Worker private constructor(
     private fun onAchieveGoalRequest(msg: Command.AchieveGoalRequest): Behavior<Command> {
         val planner = msg.from
         msg.goalState.forEach { goal ->
-            // TODO consider running gps for larger subsets of goalState
             val gpsResult = gps.run(msg.initialState.toList(), listOf(goal), abilities)
             if (gpsResult.finalStates.isNotEmpty()) {
                 offers[goal] = gpsResult.appliedOperators
@@ -54,11 +55,11 @@ class Worker private constructor(
 
     private fun onStartWorking(msg: Command.StartWorking): Behavior<Command> {
         val operations = offers[msg.goal] ?: throw Error("this should never happen")
-        context.log.info("Start working on goal: ${msg.goal}")
+        context.log.info("$name starts working on goal: ${msg.goal}")
         operations.forEach {
-            context.log.info("Doing $it, goes to sleep")
-            Thread.sleep(1000)
-            context.log.info("Worker $name wakes up")
+            context.log.info("$name: Doing $it")
+            doWork()
+            context.log.info("$name finished working")
         }
         coordinator send Coordinator.Command.WorkCompleted(context.self)
         return this
@@ -67,8 +68,9 @@ class Worker private constructor(
     companion object {
         fun create(
             coordinator: ActorRef<Coordinator.Command>,
-            abilities: Set<Operation>
-        ): Behavior<Command> = Behaviors.setup { context -> Worker(coordinator, abilities, context) }
+            abilities: Set<Operation>,
+            doWork: WorkerFunction
+        ): Behavior<Command> = Behaviors.setup { context -> Worker(coordinator, abilities, doWork, context) }
     }
 
     sealed class Command {
