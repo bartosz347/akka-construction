@@ -1,0 +1,84 @@
+{
+    "initialState": [
+        {"name": "concrete", "instance": "1"},
+        {"name": "concrete", "instance": "2"},
+        {"name": "concrete", "instance": "3"}
+    ],
+    "goalState": [
+        {"name": "anchorage", "instance": "left"},
+        {"name": "anchorage", "instance": "right"},
+        {"name": "tower-foundation", "instance": "left"}
+    ],
+    "workers": [
+        {
+            "name": "Bob",
+            "abilities": [
+                "build-anchorage",
+                "build-anchorage-step-01-dig-a-hole",
+                "build-anchorage-step-02-insert-main-hook",
+                "build-anchorage-step-03-lay-concrete"
+            ]
+        },
+        {
+            "name": "John",
+            "abilities": [
+                "build-anchorage",
+                "build-anchorage-step-01-dig-a-hole",
+                "build-anchorage-step-02-insert-main-hook",
+                "build-anchorage-step-03-lay-concrete"
+            ]
+        },
+        {
+            "name": "Dave",
+            "abilities": [
+                "build-tower-foundation"
+            ]
+        }
+    ],
+    "abilities": [
+        {
+            "name": "build-anchorage",
+            "preconditions": [
+                {"name": "hook-inserted", "instance": "main"},
+                {"name": "concrete-laid"}
+            ],
+            "adds": [{"name": "anchorage", "instance": "ANY"}],
+            "deletes": [
+                {"name": "hook-inserted", "instance": "main"},
+                {"name": "concrete-laid"}
+            ]
+        },
+        {
+            "name": "build-anchorage-step-01-dig-a-hole",
+            "preconditions": [],
+            "adds": [{"name": "hole-dug"}],
+            "deletes": []
+        },
+        {
+            "name": "build-anchorage-step-02-insert-main-hook",
+            "preconditions": [{"name": "hole-dug"}],
+            "adds": [{"name": "hook-inserted", "instance": "main"}],
+            "deletes": []
+        },
+        {
+            "name": "build-anchorage-step-03-lay-concrete",
+            "preconditions": [
+                {"name": "concrete", "instance": "ANY"},
+                {"name": "hook-inserted", "instance": "main"}
+            ],
+            "adds": [{"name": "concrete-laid"}],
+            "deletes": [{"name": "concrete", "instance": "ANY"}, {"name": "hole-dug"}]
+        },
+        {
+            "name": "build-tower-foundation",
+            "preconditions": [
+                {"name": "concrete", "instance": "ANY"},
+                {"name": "anchorage", "instance": "left"},
+                {"name": "anchorage", "instance": "right"}
+            ],
+            "adds": [{"name": "tower-foundation", "instance": "ANY"}],
+            "deletes": [{"name": "concrete", "instance": "ANY"}]
+        }
+    ],
+    "offersCollectionTimeout": "500"
+}

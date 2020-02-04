@@ -2,6 +2,7 @@ package eu.bwbw.bridge.actors
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.Behavior
+import akka.actor.typed.SupervisorStrategy.stop
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
 import eu.bwbw.bridge.actors.coordinator.Coordinator
@@ -70,7 +71,9 @@ class Worker private constructor(
             coordinator: ActorRef<Coordinator.Command>,
             abilities: Set<Operation>,
             doWork: WorkerFunction
-        ): Behavior<Command> = Behaviors.setup { context -> Worker(coordinator, abilities, doWork, context) }
+        ): Behavior<Command> = Behaviors.supervise<Command>(
+            Behaviors.setup { context -> Worker(coordinator, abilities, doWork, context) }
+        ).onFailure(stop())
     }
 
     sealed class Command {
