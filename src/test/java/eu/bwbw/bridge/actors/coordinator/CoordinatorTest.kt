@@ -90,7 +90,7 @@ class CoordinatorTest {
 
     @Test
     fun `handles worker termination when exception in doWork occurs`() {
-        val goalState = Goal("anchorage", "ANY")
+        val goalState = anchorage(ANY)
         val initialState = setOf(concrete("1"))
 
         val coordinator = testKit.createTestProbe<Coordinator.Command>()
@@ -122,7 +122,7 @@ class CoordinatorTest {
             workers = setOf(
                 ConstructionWorker("Bob", setOf(buildAnchorageOperation)) {
                     if (shouldFail) {
-                        shouldFail = false;
+                        shouldFail = false
                         throw Error("worker crash")
                     }
                 }

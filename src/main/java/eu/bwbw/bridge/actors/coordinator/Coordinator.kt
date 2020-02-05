@@ -3,7 +3,6 @@ package eu.bwbw.bridge.actors.coordinator
 import akka.actor.typed.*
 import akka.actor.typed.javadsl.ActorContext
 import akka.actor.typed.javadsl.Behaviors
-import akka.actor.typed.javadsl.Receive
 import eu.bwbw.bridge.actors.Supervisor
 import eu.bwbw.bridge.actors.Worker
 import eu.bwbw.bridge.actors.coordinator.Coordinator.Command.*
@@ -109,14 +108,8 @@ class Coordinator private constructor(
         planner send Planner.Command.StartPlanning
     }
 
-    companion object {
-        fun create(
-            supervisor: ActorRef<Supervisor.Command>,
-            config: Config
-        ): Behavior<Command> = Behaviors.setup { context -> Coordinator(supervisor, config, context) }
-    }
 
-    private fun onSignal(sig: Signal?): Behavior<Command> {
+    override fun onSignal(sig: Signal?): Behavior<Command> {
         return when (sig) {
             is ChildFailed -> onChildFailed(sig)
             else -> return this
@@ -161,6 +154,13 @@ class Coordinator private constructor(
         }
     }
 
+    companion object {
+        fun create(
+            supervisor: ActorRef<Supervisor.Command>,
+            config: Config
+        ): Behavior<Command> = Behaviors.setup { context -> Coordinator(supervisor, config, context) }
+    }
+
     sealed class Command {
         object StartConstructing : Command()
 
@@ -172,11 +172,6 @@ class Coordinator private constructor(
         data class PlanningFailed(val iteration: Int) : Command()
 
         data class WorkCompleted(val worker: ActorRef<Worker.Command>) : Command()
-    }
-
-    override fun createReceive(): Receive<Command> = object : Receive<Command>() {
-        override fun receiveMessage(msg: Command): Behavior<Command> = onMessage(msg)
-        override fun receiveSignal(sig: Signal?): Behavior<Command> = onSignal(sig)
     }
 }
 
